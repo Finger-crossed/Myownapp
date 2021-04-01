@@ -1,4 +1,56 @@
+# second
 ## 二级标题
 #### 四级标题
 [360导航](https://hao.360.com/)<br>
 [第一个markdown](https://github.com/Finger-crossed/Myownapp/blob/master/README.md)<br>
+[小狗狗（仓库内图片）](https://github.com/Finger-crossed/Myownapp/blob/master/myown.jpg)<br>
+[网络上图片](http://www.baidu.com/img/bdlogo.gif)<br>
+##### 代码<br>
+```Java
+public static void main(String[] args){}//Java
+```
+```c
+int main(int argc,char *argv[])//c
+```
+```Bash
+echo "Hello GitHub"#Bash
+```
+```Javascript
+document.getElementById("myH1").innerHTML="Welcome to my Homepage";//Javascript
+```
+```cpp
+string &operator+(const string@A,const string&B)//cpp  
+<br>
+```
+##### 区块引用<br>
+> This is the first level of quoting
+> 
+>> This is nested blockquate.
+>
+> Back to the first level.
+##### 无序列表<br>
+* 一级无序列表内容<br>
+  -  二级无序列表内容<br>
+  -  二级无序列表内容<br>
+     -   三级无序列表内容<br>
+     -   三级无序列表内容<br>
+* 一级无序列表内容<br>
+  -  二级无序列表内容<br>
+##### 有序列表<br>
+1. 第一点
+2. 第二点
+3. 第三点
+4. 第四点
+5. 第五点<br>
+##### 表格<br>
+| 水果 | 价格 | 数量 |
+|--|--|--|
+| 香蕉 | ￥1 | 2	|
+| 苹果 | ￥2 | 4	|
+| 梨子 | ￥3 | 6	|
+
+##### 字体<br>
+
+**粗体**<br>
+*斜体*<br>
+~~删除啊啊啊啊~~
