@@ -4,5 +4,5 @@
 [百度](http://baidu.com)<br>
 [第二个markdown](https://github.com/Finger-crossed/Myownapp/blob/master/second/second.md)<br>
 [小狗狗（仓库内图片）](https://github.com/Finger-crossed/Myownapp/blob/master/myown.jpg)<br>
-[网络上图片](www.baidu.com/img/bdlogo.gif"百度Logo")<br>
+[网络上图片](www.baidu.com/img/bdlogo.gif)<br>
 
