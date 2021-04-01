@@ -8,11 +8,15 @@
 ##### 代码<br>
 ```Java
 public static void main(String[] args){}//Java
+```
 ```c
 int main(int argc,char *argv[])//c
+```
 ```Bash
 echo "Hello GitHub"#Bash
+```
 ```Javascript
 document.getElementById("myH1").innerHTML="Welcome to my Homepage";//Javascript
+```
 ```cpp
 string &operator+(const string@A,const string&B)//cpp
