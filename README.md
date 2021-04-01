@@ -43,6 +43,10 @@ string &operator+(const string@A,const string&B)//cpp
 4. 第四点
 5. 第五点<br>
 
-Heading | Heading | Heading
+    | 水果     | 价格     | 数量     |
+    | ------   | -----：  |：-----： |
+    |香蕉      | ￥1      |     5    |
+    |苹果      | ￥1      |     6    |
+    |草莓      | ￥1      |     7    |
 
 
