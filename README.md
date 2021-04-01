@@ -43,7 +43,7 @@ string &operator+(const string@A,const string&B)//cpp
 4. 第四点
 5. 第五点<br>
 ##### 表格<br>
-| name | 价格 | 数量 |
+| 水果 | 价格 | 数量 |
 |--|--|--|
 | 香蕉 | ￥1 | 2	|
 | 苹果 | ￥2 | 4	|
