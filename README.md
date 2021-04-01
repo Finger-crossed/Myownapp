@@ -49,5 +49,8 @@ string &operator+(const string@A,const string&B)//cpp
 | 苹果 | ￥2 | 4	|
 | 梨子 | ￥3 | 6	|
 
+##### 字体<br>
 
-
+**粗体**<br>
+*斜体*<br>
+~~删除啊啊啊啊~~
