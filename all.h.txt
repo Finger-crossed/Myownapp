@@ -1,0 +1,880 @@
+#pragma once
+#define _CRT_SECURE_NO_WARNINGS
+#pragma once
+#include"stdio.h"
+#include"stdlib.h"//头文件
+#include<string.h>
+#ifndef FALSE
+#define FALSE 0
+#endif//常量false
+#ifndef TRUE
+#define TRUE 1
+#endif //常量true
+FILE*fp;
+
+/*********************************************/
+//                 词法分析
+/*********************************************/
+
+
+#define maxbaoliu 21//保留字的最大数量
+#define maxtokenlenhth 40//单词最大长度定义为40
+#define tokenlength sizeof(TokenType)//token长度
+#define chainnodelenghth sizeof(ChainNodeType)//链表节点长度
+static int Error = FALSE;//错误追踪标志
+FILE*source;//源文件
+FILE*listing;//列表输出文件
+static int Tokennum = 0;//token总数目初始化为0
+
+static int lineno = 0;//源文件代码的行号
+static int linelinshi = 0;
+int savedOff = 0;//记录当前层的displayoff
+#pragma once
+typedef enum
+{
+	ASSIGN, EQ, LT, PLUS, MINUS,
+	TIMES, OVER, LPAREN, RPAREN, DOT,
+	COLON, SEMI, COMMA, LMIDPAREN, RMIDPAREN,
+	UNDERANGE, ENDFILE, ERROR, PROGRAM, PROCEDURE, TYPE, VAR, IF,
+	THEN, ELSE, FI, WHILE, DO,
+	ENDWH, BEGIN, END, READ, WRITE,
+	ARRAY, OF, RECORD, RETURN, INTEGER, CHAR, ID, INTC, CHARC,
+}WordType;
+//单词类型（词法和语义）
+typedef struct tokenType
+{
+	int lineshow;
+	WordType Word;
+	char Mean[41];
+}TokenType;
+//链表节点类型
+typedef struct node
+{
+	TokenType Token;//单词
+	struct node* nextToken;//指向下一个单词的指针
+}ChainNodeType;
+
+/*******************************************/
+//语法分析
+/*******************************************/
+
+
+//语法分析树的各个节点的类型
+/*
+树根：Pro 程序头：ProHead 声明类型：Dec 子结点都是类型声明：Type 子结点都是变量声明：Var
+函数声明：FuncDec 语句序列：StmL  语句声明：Stmt 表达式：Exp
+*/
+typedef enum {
+	Pro, ProHead, Dec, Type, Var, FuncDec, StmL, Stmt, Exp
+}TreeTypeKind;
+//声明的类型分类
+/*
+数组类型Array，字符类型Char，整数类型Integer，记录类型Record，类型标识符作为类型：Id
+*/
+typedef enum {
+	Array, Char, Integer, Record, Id
+}DeclareKind;
+/*
+语句类型：判断If 循环While 赋值Assign 读Read 写Write 调用函数Call，返回类型Return
+*/
+typedef enum {
+	If, While, Assign, Read, Write, Call, Return
+}SentenceKind;
+/*
+表达式类型：操作Op，常数Const，变量Var，
+*/
+typedef enum {
+	Op, Const, VarType
+}ExceptionKind;
+//变量类型 标识符Id 数组成员ArrayMember，域成员FieldMember
+typedef enum {
+	Identifier, ArrayMember, FieldMember
+}VarKind;
+//检查类型 空Void 整型Integer 布尔类型Boolean
+typedef enum {
+	Void, INTEger, Boolean
+}ExpKind;
+//参数类型 ParamType 值参Val 变参Varpa
+typedef enum {
+	Val, Varpa
+}ParamType;
+
+//语法分析树
+typedef struct TreeNode
+{
+	struct TreeNode*treechild[3];//语法书节点的最大子节点数为3，过程声明的子结点0指向参数部分，1指向声明体部分，2指向函数语句部分
+	struct TreeNode*brother;//兄弟节点
+	int noline;//源代码行号
+	TreeTypeKind nodekind;//节点类型
+	union
+	{
+		DeclareKind dec;
+		SentenceKind stmt;
+		ExceptionKind exp;
+	}kind;//具体的类型
+	int samenum;//相同类型的变量个数
+	char name[10][10];//标识符的名称
+	struct symbtable * table[10]; /* 与标志符对应的符号表地址，在语义分析阶段填入*/
+	struct
+	{
+		struct {
+			int low;//数组下界
+			int up;//数组上界
+			DeclareKind childtype;//数组的子类型
+		}ArrayFigure;//数组属性
+		struct {
+			ParamType paramtype;//过程的参数类型
+		}ProcFigure;//过程属性
+		struct {
+			WordType op;//表达式的操作符
+			int value;//表达式的值
+			VarKind varkind;//变量的类别
+			ExpKind type;//检查类型
+		}ExceptionFigure;//表达式属性
+		char typeName[10];//类型名是标识符
+	}Figure;//属性
+
+}TreeNoder;
+
+
+
+/*************************************************/
+//语义分析
+/*************************************************/
+
+
+
+//标识符的类型
+typedef enum
+{
+	typeKind, varKind, procKind
+}Idkind;
+//变量的类别
+typedef enum
+{
+	dir, indir
+}AccessKind;
+//形参表的结构定义
+typedef struct paramTable
+{
+	struct symbtable *entry;//指向形参所在符号表中的地址入口
+	struct paramTable *next;
+}ParamTable;
+//标识符的属性结构定义
+typedef struct
+{
+	struct typeIR*idtype;//指向标识符的类型内部表示
+	Idkind kind;//标识符的类型
+	union
+	{
+		struct
+		{
+			AccessKind access;//判断是变参还是实参
+			int level;//层数
+			int off;//偏移
+			bool isParam;//判断是参数还是普通变量//	
+		}VarFigure;//变量标识符的属性
+		struct
+		{
+			int level;//过程的层数
+			ParamTable *param;//参数表
+			int moff;//过程活动记录的大小
+			int noff;//sp到display表的偏移量
+			int procEntry;//过程入口地址
+		}ProcFigure;//过程名标识符的属性
+	}Random;//标识符的不同类型有不同的属性
+}IDfigure;
+
+
+
+/*符号表的结构定义*/
+typedef struct  symbtable
+{
+	char  idName[10];
+	IDfigure idfinger;
+	struct symbtable  *  next;
+
+}SymbTable;
+//类型内部表示
+//枚举定义
+typedef enum {
+	intTy, charTy, arrayTy, recordTy, boolTy
+}TypeKind;
+//域类型单元结构定义
+typedef struct fieldchain
+{
+	char id[10];//变量名
+	int off;//所在记录中的偏移
+	struct typeIR*UnitType;//域中成员的类型
+	struct fieldchain *next;
+
+}fieldChain;
+
+/*
+ 类型内部结构中的第一个成分是类型大小的信息，第二个成分是具体
+类型。其他信息的内容随类型不同而不同。可用下列统一的数据结构描述：
+*/
+typedef struct typeIR
+{
+	int size;//类型所占空间大小
+	TypeKind kind;
+	union
+	{
+		struct
+		{
+			struct typeIR*indexTy;
+			struct typeIR*elemTy;
+			int low;//记录数组类型的下界
+			int up;//记录数组类型的商界
+		}ArrayFigure;
+		fieldChain*body;//记录类型中的域链
+	}More;
+}TypeIR;
+//scope栈的层数
+int Level = -1;
+//在同层的变量偏移
+int Off;
+//在主程序的off偏移
+int mainoff;
+
+SymbTable *scope[1000];//scope栈
+TypeIR *intPtr = NULL;//该指针始终指向整数类型的内部表示
+TypeIR*charPtr = NULL;//该指针始终指向字符类型的内部表示
+TypeIR*boolPtr = NULL;//该指针始终指向布尔类型的内部表示
+static TypeIR*arrayVar(TreeNode*t);
+static TypeIR*recordVar(TreeNode*t);
+static TypeIR*arrayVar(TreeNode*t);
+static void assignstatement(TreeNode*t);
+static void callstatement(TreeNode*t);
+static void ifstatement(TreeNode*t);
+static void readstatement(TreeNode*t);
+static void returnstatement(TreeNode*t);
+static void whilestatement(TreeNode*t);
+static void writestatement(TreeNode*t);
+static TypeIR*TypeProcess(TreeNode*t, DeclareKind kind);
+static void VarDecPart(TreeNode*t);
+
+
+
+
+
+
+
+
+/*************************************************/
+//               语法分析（递归下降分析程序）
+/*************************************************/
+
+
+// 功  能 创建函数类型语法树节点函数					
+// 说  明 该函数为语法树创建一个新的函数类型结点		
+//        并将语法树节点成员初始化						
+TreeNode * newProcNode()
+
+{
+	/* 在内存中动态申请分配单元，返回指向该单元的语法树结点类型指针t */
+	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
+	int i;
+
+	/* 语法树节点指针t为NULL,未能成功分配内存单元 *
+	 * 将出错信息及行号lineno写入列表文件listing  */
+	if (t == NULL)
+	{
+		fprintf(listing, "Out of memory error at line %d\n", lineno);
+		Error = TRUE;
+	}
+	/* 语法树节点指针t不是NULL,成功分配内存单元 */
+	else {
+
+		/* 初始化新语法树节点t各子节点child[i]为NULL */
+		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
+
+		/* 初始化新语法树节点t兄弟节点sibling为NULL */
+		t->brother = NULL;
+
+		/* 指定新语法树节点t成员:结点类型nodekind为语句类型ProcDecK */
+		t->nodekind = FuncDec;
+
+
+		/* 指定新语法树节点t成员:源代码行号linelinshi为全局变量lineno */
+		t->noline = linelinshi;
+
+		t->samenum = 0;
+
+		for (i = 0; i < 10; i++)
+		{
+			strcpy(t->name[i], "\0");
+			t->table[i] = NULL;
+		}
+
+	}
+	/* 函数返回语句类型语法树节点指针t */
+	return t;
+}
+
+// 功  能 类型标志语法树节点创建函数					
+// 说  明 该函数为语法树创建一个新的类型标志结点，      
+//       表示在它之下的声明都为类型声明，        		
+//        并将语法树节点的成员初始化					
+TreeNode * newTypeNode()
+
+{
+	/* 内存中动态申请分配单元，返回指向该单元的语法树节点类型指针t */
+	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
+
+	int i;
+
+	/* 语法树节点指针t为NULL,未能成功分配内存单元		*
+	 * 将出错信息及行号lineno写入列表文件listing		*/
+	if (t == NULL)
+		fprintf(listing, "Out of memory error at line %d\n", lineno);
+
+	/* 语法树节点指针t不是NULL,内存单元已经成功分配 */
+	else {
+
+		/* 初始化新语法树节点t各子节点child[i]为NULL */
+		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
+
+		/* 初始化新语法树节点t兄弟节点sibling为NULL(空) */
+		t->brother = NULL;
+
+		/* 指定新语法树节点t成员: 结点类型nodekind为表达式类型ExpK */
+		t->nodekind = Type;
+
+
+		/* 指定新语法树节点t成员: 源代码行号linelinshi为全局变量lineno */
+		t->noline = linelinshi;
+
+		t->samenum = 0;
+		/*初始化符号表地址指针*/
+		for (int i = 0; i < 10; i++)
+			t->table[i] = NULL;
+
+	}
+
+	/* 函数返回表达式类型语法树结点指针t */
+	return t;
+}
+
+
+// 函数名 newVarNode								
+// 功  能 变量声明标志语法树节点创建函数				
+//说  明 该函数为语法树创建一个新的变量声明标志结点，
+//        表示在它之下的声明都为变量声明，           	
+//   并将语法树节点的成员初始化					
+TreeNode * newVarNode()
+
+{
+	/* 内存中动态申请分配单元，返回指向该单元的语法树节点类型指针t */
+	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
+
+	int i;
+
+	/* 语法树节点指针t为NULL,未能成功分配内存单元		*
+	 * 将出错信息及行号lineno写入列表文件listing		*/
+	if (t == NULL)
+		fprintf(listing, "Out of memory error at line %d\n", lineno);
+
+	/* 语法树节点指针t不是NULL,内存单元已经成功分配 */
+	else {
+
+		/* 初始化新语法树节点t各子节点child[i]为NULL */
+		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
+
+		/* 初始化新语法树节点t兄弟节点sibling为NULL(空) */
+		t->brother = NULL;
+
+		/* 指定新语法树节点t成员: 结点类型nodekind为表达式类型ExpK */
+		t->nodekind = Var;
+
+		/* 指定新语法树节点t成员: 源代码行号linelinshi为全局变量lineno */
+		t->noline = linelinshi;
+
+		t->samenum = 0;
+		/*初始化符号表地址指针*/
+		for (int i = 0; i < 10; i++)
+		{
+			t->table[i] = NULL;
+		}
+	}
+	/* 函数返回表达式类型语法树结点指针t */
+	return t;
+}
+/* 函数名 newDecANode									*/
+/* 功  能 创建声明语法树节点函数,没有指明具体的节点声明 */
+/*        类型,在语法树的第二层			                */
+/* 说  明 该函数为语法树创建一个新的结点      	     	*/
+/*        并将语法树节点成员初始化						*/
+/********************************************************/
+TreeNode * newDecANode(TreeTypeKind kind)
+
+{
+	/* 在内存中动态申请分配单元，返回指向该单元的语法树结点类型指针t */
+	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
+
+	int i;
+
+	/* 语法树节点指针t为NULL,未能成功分配内存单元 *
+	 * 将出错信息及行号lineno写入列表文件listing  */
+	if (t == NULL)
+	{
+		fprintf(listing, "Out of memory error at line %d\n", lineno);
+		Error = TRUE;
+	}
+	/* 语法树节点指针t不是NULL,成功分配内存单元 */
+	else {
+
+		/* 初始化新语法树节点t各子节点child[i]为NULL */
+		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
+
+		/* 初始化新语法树节点t兄弟节点sibling为NULL */
+		t->brother = NULL;
+
+		/* 指定新语法树节点t成员:结点类型nodekind为参数kind */
+		t->nodekind = kind;
+
+		/* 指定新语法树节点t成员:源代码行号linelinshi为全局变量lineno */
+		t->noline = linelinshi;
+		t->samenum = 0;
+		for (i = 0; i < 10; i++)
+		{
+			strcpy(t->name[i], "\0");
+			t->table[i] = NULL;
+		}
+	}
+	/* 函数返回语法树根节点指针t */
+	return t;
+}
+//创建新的程序根节点
+TreeNode*newroot()
+{
+	TreeNode*t = (TreeNode*)malloc(sizeof(TreeNode));
+	for (int i = 0; i < 3; i++)
+	{
+		t->treechild[i] = NULL;//初始化各个子结点
+	}
+	t->brother = NULL;//兄弟节点为NULL
+	t->nodekind = Pro;//节点类型为语句类型
+	t->noline = 0;
+	t->samenum = 0;
+	for (int i = 0; i < 10; i++)
+	{
+		strcpy(t->name[i], "\0");
+	}
+	return t;
+}
+//创建新的程序头结点,为语法树创建一个新的程序头结点并将语法树节点成员初始化
+
+TreeNode* newProhead()
+{
+	TreeNode*t = (TreeNode*)malloc(sizeof(TreeNode));
+	for (int i = 0; i < 3; i++)
+	{
+		t->treechild[i] = NULL;
+	}
+	t->brother = NULL;
+	t->nodekind = ProHead;//语句类型
+	t->noline = linelinshi;
+	t->samenum = 0;
+	for (int i = 0; i < 10; i++)
+	{
+		strcpy(t->name[i], "\0");
+	}
+	return t;
+
+}
+//创建新的声明部分的节点
+TreeNode*newDecNode()
+{
+	TreeNode*t = (TreeNode*)malloc(sizeof(TreeNode));
+	if (t == NULL)
+	{
+		fprintf(listing, "Out of memory error at line %d\n", lineno);
+		Error = TRUE;
+	}
+
+	/* 语法树节点指针t不是NULL,成功分配内存单元 */
+	else {
+		for (int i = 0; i < 3; i++)
+		{
+			t->treechild[i] = NULL;
+		}
+		t->brother = NULL;
+		t->nodekind = Dec;
+		t->noline = linelinshi;
+		t->samenum = 0;
+		for (int i = 0; i < 10; i++)
+		{
+			strcpy(t->name[i], "\0");
+			t->table[i] = NULL;
+		}
+
+	}
+	return t;
+}
+//功  能 创建语句标志类型语法树节点函数				
+// 说  明 该函数为语法树创建一个新的语句标志类型结点	
+//       并将语法树节点成员初始化						
+TreeNode * newSentenceBiaozhiNode()
+{
+	/* 在内存中动态申请分配单元，返回指向该单元的语法树结点类型指针t */
+	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
+
+	int i;
+
+	/* 语法树节点指针t为NULL,未能成功分配内存单元 *
+	 * 将出错信息及行号lineno写入列表文件listing  */
+	if (t == NULL)
+	{
+		fprintf(listing, "Out of memory error at line %d\n", lineno);
+		Error = TRUE;
+	}
+	/* 语法树节点指针t不是NULL,成功分配内存单元 */
+	else {
+
+		/* 初始化新语法树节点t各子节点child[i]为NULL */
+		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
+
+		/* 初始化新语法树节点t兄弟节点sibling为NULL */
+		t->brother = NULL;
+
+		/* 指定新语法树节点t成员:结点类型nodekind为语句类型StmLK */
+		t->nodekind = StmL;
+
+		/* 指定新语法树节点t成员:源代码行号linelinshi为全局变量lineno */
+		t->noline = linelinshi;
+
+		t->samenum = 0;
+
+		for (i = 0; i < 10; i++)
+		{
+			strcpy(t->name[i], "\0");
+			t->table[i] = NULL;
+		}
+
+	}
+	/*函数返回语句类型语法树节点指针t*/
+	return t;
+}
+
+// 功  能 创建语句类型语法树节点函数				
+// 说  明 该函数为语法树创建一个新的语句标志类型结点	
+//        并将语法树节点成员初始化						
+TreeNode * newSentenceNode(SentenceKind kind)
+
+{
+	/* 在内存中动态申请分配单元，返回指向该单元的语法树结点类型指针t */
+	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
+
+	int i;
+
+	/* 语法树节点指针t为NULL,未能成功分配内存单元 *
+	 * 将出错信息及行号lineno写入列表文件listing  */
+	if (t == NULL)
+	{
+		fprintf(listing, "Out of memory error at line %d\n", lineno);
+		Error = TRUE;
+	}
+	/* 语法树节点指针t不是NULL,成功分配内存单元 */
+	else {
+
+		/* 初始化新语法树节点t各子节点child[i]为NULL */
+		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
+
+		/* 初始化新语法树节点t兄弟节点sibling为NULL */
+		t->brother = NULL;
+
+		/* 指定新语法树节点t成员:结点类型nodekind为语句类型StmLK */
+		t->nodekind = Stmt;
+		t->kind.stmt = kind;
+		/* 指定新语法树节点t成员:源代码行号linelinshi为全局变量lineno */
+		t->noline = linelinshi;
+
+		t->samenum = 0;
+
+		for (i = 0; i < 10; i++)
+		{
+			strcpy(t->name[i], "\0");
+			t->table[i] = NULL;
+		}
+
+	}
+	/*函数返回语句类型语法树节点指针t*/
+	return t;
+}
+
+// 功  能 表达式类型语法树节点创建函数					
+//说  明 该函数为语法树创建一个新的表达式类型结点		
+//      并将语法树节点的成员初始化					
+TreeNode * newExpNode(ExceptionKind kind)
+{
+	/* 内存中动态申请分配单元，返回指向该单元的语法树节点类型指针t */
+	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
+
+	int i;
+
+	/* 语法树节点指针t为NULL,未能成功分配内存单元		*
+	 * 将出错信息及行号lineno写入列表文件listing		*/
+	if (t == NULL)
+	{
+		fprintf(listing, "Out of memory error at line %d\n", lineno);
+		Error = TRUE;
+	}
+	/* 语法树节点指针t不是NULL,内存单元已经成功分配 */
+	else {
+
+		/* 初始化新语法树节点t各子节点child[i]为NULL */
+		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
+
+		/* 初始化新语法树节点t兄弟节点sibling为NULL(空) */
+		t->brother = NULL;
+
+		/* 指定新语法树节点t成员: 结点类型nodekind为表达式类型ExpK */
+		t->nodekind = Exp;
+
+		/* 指定新语法树节点t成员: 表达式类型kind.exp为函数给定参数kind */
+		t->kind.exp = kind;
+
+		/* 指定新语法树节点t成员: 源代码行号linelinshi为全局变量lineno */
+		t->noline = linelinshi;
+
+		/* 指定新语法树节点t成员: 表达式为变量类型时的变量类型varkind *
+		/* 为IdV.*/
+		t->Figure.ExceptionFigure.varkind = Identifier;
+
+		/* 指定新语法树节点t成员: 类型检查类型type为Void */
+		t->Figure.ExceptionFigure.type = Void;
+
+		for (i = 0; i < 10; i++)
+		{
+			strcpy(t->name[i], "\0");
+			t->table[i] = NULL;
+		}
+	}
+
+	/* 函数返回表达式类型语法树结点指针t */
+	return t;
+}
+
+
+/* 功  能 字符串复制函数								*/
+/* 说  明 该函数为已存在的字串分配内存单元,并将其复制	*/
+/********************************************************/
+char * CopyString(char * s)
+
+{
+	int n;
+	char * t;
+
+	/* 函数参数s所给字串为NULL(空), 函数返回NULL */
+	if (s == NULL) return NULL;
+
+	/* 函数参数s所给字串非空，计算字串s长度+1赋给临时变量n */
+	n = strlen(s) + 1;
+
+	/* 动态分配内存单元,指定单元长度为n,t为指向该单元的指针 */
+	t = (char *)malloc(n);
+
+	/* 单元指针t为NULL(空),未能成功分配			*
+	 * 将出错信息及行号lineno写入列表文件listing  */
+	if (t == NULL)
+	{
+		fprintf(listing, "Out of memory error at line %d\n", lineno);
+		Error = TRUE;
+	}
+	/* 调用库函数string.h,复制给定字串s到新字串单元t */
+	else strcpy(t, s);
+
+	/* 函数返回复制得到的新字串指针t */
+	return t;
+}
+
+
+
+static int fpnum = 0;//输出记录token个数的变量
+void ReadNextToken(TokenType*p)
+{
+	FILE*fp;
+	fp = fopen("D:\\tokenlist", "rb");//只读
+	if (fp == NULL)
+	{
+		printf("There is no file Tokenlist!\n");
+		Error = TRUE;
+	}
+	fseek(fp, fpnum * sizeof(TokenType), 0);
+	fread(p, sizeof(TokenType), 1, fp);
+	fpnum++;
+	fclose(fp);
+}
+static TokenType token;
+void match(WordType a)//终极符匹配函数 
+{
+	if (token.Word == a)//将当前单词与函数参数给定单词比较
+	{
+		ReadNextToken(&token);//一致则取下一个单词
+		linelinshi = token.lineshow;
+	}
+	else
+	{
+		fprintf(listing, "not match error");
+		fprintf(listing, "'%s'\n", token.Mean);
+		ReadNextToken(&token);
+		exit(0);
+	}
+}
+
+
+
+
+
+//词法分析部分
+
+
+
+void ChainToFile(ChainNodeType*Chainhead)
+{
+	int num = 1;
+	ChainNodeType  *currentP = (ChainNodeType*)malloc(sizeof(ChainNodeType));
+		currentP = Chainhead;
+	/*创建一个新的文件"Tokenlist",以存储Token序列*/
+	fp = fopen("D:\\tokenlist", "wb");
+	if (fp == NULL)
+	{
+		printf("cannot create file Tokenlist!\n");
+		Error = TRUE;
+		//exit(0);
+	}
+
+	fp = fopen("D:\\tokenlist", "ab");   /*按追加方式打开文件*/
+	if (fp == NULL)
+	{
+		printf("cannot open file Tokenlist!\n");
+		Error = TRUE;
+		exit(0);
+	}
+	/*从表头到表尾，依次将所有的Token写入文件*/
+	do
+	{
+		fwrite(currentP, tokenlength, 1, fp);
+		currentP = currentP->nextToken;
+		num++;
+	} while (currentP != NULL);
+
+	fclose(fp);  /*关闭文件*/
+
+}
+void printTokenlist()//显示词法分析结果
+{
+	TokenType token;
+	fp = fopen("D:\\tokenlist", "rb");
+	if (fp == NULL)
+	{
+		printf("cannot open the file:Tokenlist!\n");
+		Error = TRUE;
+
+	}
+	for (int n = 1; n <= Tokennum; n++)
+	{
+		fread(&token, tokenlength, 1, fp);
+		fprintf(listing, "%d:", token.lineshow);
+
+		switch (token.Word)
+		{
+		case PROGRAM:
+		case PROCEDURE:
+		case TYPE:
+		case VAR:
+		case IF:
+		case THEN:
+		case ELSE:
+		case FI:
+		case INTEGER:
+		case CHAR:
+		case WHILE:
+		case DO:
+		case ENDWH:
+		case BEGIN:
+		case END:
+		case READ:
+		case WRITE:
+		case ARRAY:
+		case OF:
+		case RECORD:
+		case RETURN:
+
+			fprintf(listing, "Key Words: %s\n", token.Mean);
+			break;
+
+			/* 单词token为特殊符号：ASSIGN (赋值)，将":="写入文件listing */
+		case ASSIGN: fprintf(listing, ":=\n"); break;
+
+			/* 单词token为特殊符号：LT (小于)，将"<"写入文件listing */
+		case LT: fprintf(listing, "<\n"); break;
+
+			/* 单词token为特殊符号：EQ (等于)，将"="写入文件listing */
+		case EQ: fprintf(listing, "=\n"); break;
+
+			/* 单词token为特殊符号：LPAREN (左括号)，将"("写入文件listing */
+		case LPAREN: fprintf(listing, "(\n"); break;
+
+			/* 单词token为特殊符号：RPAREN (右括号)，将")"写入文件listing */
+		case RPAREN: fprintf(listing, ")\n"); break;
+
+			/* 单词token为特殊符号：SEMI (分号)，将";"写入文件listing */
+		case SEMI: fprintf(listing, ";\n"); break;
+
+			/* 单词token为特殊符号：PLUS (加号)，将"+"写入文件listing */
+		case PLUS: fprintf(listing, "+\n"); break;
+
+			/* 单词token为特殊符号；MINUS (减号)，将"-"写入文件listing */
+		case MINUS: fprintf(listing, "-\n"); break;
+
+			/* 单词token为特殊符号：TIMES (乘号)，将"*"写入文件listing */
+		case TIMES: fprintf(listing, "*\n"); break;
+
+			/* 单词token为特殊符号：OVER (除号)，将"/"写入文件listing */
+		case OVER: fprintf(listing, "/\n");  break;
+
+		case DOT:  fprintf(listing, ".\n"); break;
+
+		case COMMA: fprintf(listing, ",\n"); break;
+
+		case LMIDPAREN: fprintf(listing, "[\n"); break;
+
+		case RMIDPAREN: fprintf(listing, "]\n"); break;
+
+		case UNDERANGE: fprintf(listing, "..\n"); break;
+
+			/* 单词token为簿记单词符号：ENDFILE (文件结尾)，将EOF写入文件listing */
+		case ENDFILE: fprintf(listing, "EOF\n"); break;
+
+			/* 单词token为多字符单词符号：NUM (数字)，将数值写入文件listing */
+		case INTC:
+			fprintf(listing, "Number, val= %s\n", token.Mean);
+			break;
+
+		case CHARC:
+			fprintf(listing, "Inchar, char=%s\n", token.Mean);
+			break;
+
+			/* 单词token为多字符单词符号：ID (标识符)，将标识符名写入文件listing */
+		case ID:
+			fprintf(listing, "Identifier, name= %s\n", token.Mean);
+			break;
+
+			/* 单词token为簿记单词符号：ERROR (错误)，将错误信息写入文件listing */
+		case ERROR:
+			fprintf(listing, "ERROR: %s\n", token.Mean);
+			break;
+
+			/* 单词token为其他未知单词，未知信息写入文件listing,此种情况不应发生 */
+		default:
+			fprintf(listing, "Unknown token: %d\n", token.Word);
+			break;
+
+		}
+		fseek(fp, n*tokenlength, 0);
+	}
+	fprintf(listing, "\n");
+	fclose(fp);
+}
