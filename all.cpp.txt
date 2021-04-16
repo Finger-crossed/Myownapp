@@ -1,60 +1,60 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "all.h"
 #include"string.h"
-#include"ctype.h"//×Ö·û²âÊÔº¯Êýisaplha×ÖÄ¸²âÊÔ isdigit Êý×Ö²âÊÔ ......
+#include"ctype.h"//å­—ç¬¦æµ‹è¯•å‡½æ•°isaplhaå­—æ¯æµ‹è¯• isdigit æ•°å­—æµ‹è¯• ......
 #include"math.h"
 /*
-Ê¶±ðSNLµ¥´ÊµÄDFA±íÊ¾
-·ÖÎª±êÊ¶·û×´Ì¬INID£¨×ÖÄ¸£©£¬Êý×Ö×´Ì¬INNUM£¨Êý×Ö£©£¬Íê³É×´Ì¬DONE£¨¼Ó¼õ³Ë³ýµÈ£©£¬¸³Öµ×´Ì¬INASSIGN£¨=£©£¬
-×¢ÊÍ×´Ì¬INCOMMENT£¨{£©£¬Êý×éÏÂ±êÏÂ½ç×´Ì¬INRANGE£¨.£©£¬×ÖÄ¸±êÖ¾×´Ì¬INCHAR,¿ªÊ¼×´Ì¬START
+è¯†åˆ«SNLå•è¯çš„DFAè¡¨ç¤º
+åˆ†ä¸ºæ ‡è¯†ç¬¦çŠ¶æ€INIDï¼ˆå­—æ¯ï¼‰ï¼Œæ•°å­—çŠ¶æ€INNUMï¼ˆæ•°å­—ï¼‰ï¼Œå®ŒæˆçŠ¶æ€DONEï¼ˆåŠ å‡ä¹˜é™¤ç­‰ï¼‰ï¼Œèµ‹å€¼çŠ¶æ€INASSIGNï¼ˆ=ï¼‰ï¼Œ
+æ³¨é‡ŠçŠ¶æ€INCOMMENTï¼ˆ{ï¼‰ï¼Œæ•°ç»„ä¸‹æ ‡ä¸‹ç•ŒçŠ¶æ€INRANGEï¼ˆ.ï¼‰ï¼Œå­—æ¯æ ‡å¿—çŠ¶æ€INCHAR,å¼€å§‹çŠ¶æ€START
 
 */
 typedef enum
 {
 	INID, INNUM, DONE, INASSIGN, INCOMMENT, INRANGE, INCHAR, START
 }StateType;
-char tokenword[41];//ÓÃÓÚ±£´æ±êÊ¶·û±£Áô×Ö
-static char line[256];//Ã¿ÐÐ×î´óËùÈÝµÄ³¤¶È£¬Ò»ÐÐµÄ×Ö·ûÈ«²¿´æÔÚÕâÀï
-static int Line = 0;//ÔÚlineÖÐµ±Ç°×Ö·ûÎ»ÖÃ
-static int linelarge = 0;//ÔÚµ±Ç°»º³åÇøÖÐ´æµÄ×Ö·û´®µÄ´óÐ¡
+char tokenword[41];//ç”¨äºŽä¿å­˜æ ‡è¯†ç¬¦ä¿ç•™å­—
+static char line[256];//æ¯è¡Œæœ€å¤§æ‰€å®¹çš„é•¿åº¦ï¼Œä¸€è¡Œçš„å­—ç¬¦å…¨éƒ¨å­˜åœ¨è¿™é‡Œ
+static int Line = 0;//åœ¨lineä¸­å½“å‰å­—ç¬¦ä½ç½®
+static int linelarge = 0;//åœ¨å½“å‰ç¼“å†²åŒºä¸­å­˜çš„å­—ç¬¦ä¸²çš„å¤§å°
 
 
 
-int EOF_FLAG = FALSE;//ÎÄ¼þÄ©Î²±êÖ¾
-int isend = TRUE;//Ô´ÎÄ¼þ×·×Ù±êÖ¾
+int EOF_FLAG = FALSE;//æ–‡ä»¶æœ«å°¾æ ‡å¿—
+int isend = TRUE;//æºæ–‡ä»¶è¿½è¸ªæ ‡å¿—
 
-int TraceScan = FALSE;//´Ê·¨·ÖÎö×·×Ù±êÖ¾£¬½«´Ê·¨·ÖÎöÐÅÏ¢Êä³öµ½ÖÐ¼äÎÄ¼þlisting
-int getnext()//È¡ÏÂÒ»¸ö·Ç¿Õ×Ö·û
+int TraceScan = FALSE;//è¯æ³•åˆ†æžè¿½è¸ªæ ‡å¿—ï¼Œå°†è¯æ³•åˆ†æžä¿¡æ¯è¾“å‡ºåˆ°ä¸­é—´æ–‡ä»¶listing
+int getnext()//å–ä¸‹ä¸€ä¸ªéžç©ºå­—ç¬¦
 {
 
-	if (Line >= linelarge)//µ±Ç°´úÂëÊäÈëÐÐ»º³åÇøÒÑ¾­ºÄ¾¡
+	if (Line >= linelarge)//å½“å‰ä»£ç è¾“å…¥è¡Œç¼“å†²åŒºå·²ç»è€—å°½
 	{
 		lineno++;
-		if (fgets(line, 255, source))//´ÓÎÄ¼þsourceÖÐ¶ÁÈ¡254¸ö×Ö·û
+		if (fgets(line, 255, source))//ä»Žæ–‡ä»¶sourceä¸­è¯»å–254ä¸ªå­—ç¬¦
 		{
 			if (isend)
-				fprintf(listing, "%4d: %s", lineno, line);//×·×Ù±êÖ¾Î»Õæ£¬Ôò½«ÐÐºÅ¼°ÐÐÄÚÈÝÔÚ´Ë·¨É¨ÃèÊ±Ð´ÈëlistingÎÄ¼þÖÐ¹úÄØ
-			//ÊäÈëÔ´ÂëµÄÊµ¼ÊÐÐµÄ³¤¶È
+				fprintf(listing, "%4d: %s", lineno, line);//è¿½è¸ªæ ‡å¿—ä½çœŸï¼Œåˆ™å°†è¡Œå·åŠè¡Œå†…å®¹åœ¨æ­¤æ³•æ‰«ææ—¶å†™å…¥listingæ–‡ä»¶ä¸­å›½å‘¢
+			//è¾“å…¥æºç çš„å®žé™…è¡Œçš„é•¿åº¦
 			linelarge = strlen(line);
-			Line = 0;//µ±Ç°×Ö·ûÎ»ÖÃÎª0;
-			return line[Line++];//È¥µÄÊäÈë»º³åÇøµÄÏÂÒ»¸ö×Ö·û
+			Line = 0;//å½“å‰å­—ç¬¦ä½ç½®ä¸º0;
+			return line[Line++];//åŽ»çš„è¾“å…¥ç¼“å†²åŒºçš„ä¸‹ä¸€ä¸ªå­—ç¬¦
 		}
 		else
 		{
 			EOF_FLAG = TRUE;
-			return EOF;//ÒÑ¾­µ½Ô´´úÂëÎÄ¼þÄ©Î²
+			return EOF;//å·²ç»åˆ°æºä»£ç æ–‡ä»¶æœ«å°¾
 		}
 	}
 	else
 	{
-		//ÊäÈë»º³åÇøÖÐ×Ö·ûÎ´¶ÁÍê£¬Ö±½ÓÈ¡ÏÂÒ»¸ö×Ö·û
+		//è¾“å…¥ç¼“å†²åŒºä¸­å­—ç¬¦æœªè¯»å®Œï¼Œç›´æŽ¥å–ä¸‹ä¸€ä¸ªå­—ç¬¦
 		return line[Line++];
 	}
 
 }
-void disgetnext()//»ØÍË×Ö·û£¬ÔÚÐÐ»º³åÇøÖÐ»ØÍË£¬³¬Ç°¶Á×Ö·ûºó²»Æ¥ÅäÊ±ºòµÄ»ØÍË
+void disgetnext()//å›žé€€å­—ç¬¦ï¼Œåœ¨è¡Œç¼“å†²åŒºä¸­å›žé€€ï¼Œè¶…å‰è¯»å­—ç¬¦åŽä¸åŒ¹é…æ—¶å€™çš„å›žé€€
 {
-	//²»ÊÇ´¦ÓÚÎÄ¼þÄ©Î²£¬ÊäÈëÐÐ»º³åÇøÖÐµ±Ç°×Ö·ûÎ»ÖÃ¼õ1
+	//ä¸æ˜¯å¤„äºŽæ–‡ä»¶æœ«å°¾ï¼Œè¾“å…¥è¡Œç¼“å†²åŒºä¸­å½“å‰å­—ç¬¦ä½ç½®å‡1
 	if (!EOF_FLAG)Line--;
 }
 static struct
@@ -67,23 +67,23 @@ static struct
 	   ,{(char*)"do",DO},{(char*)"endwh",ENDWH},{(char*)"read",READ},{(char*)"write",WRITE},{(char*)"return",RETURN}
 	   ,{(char*)"integer",INTEGER},{(char*)"char",CHAR} };
 
-WordType checkbaoliu(char*a)//±£Áô×Ö²éÕÒº¯Êý
+WordType checkbaoliu(char*a)//ä¿ç•™å­—æŸ¥æ‰¾å‡½æ•°
 {
 	for (int i = 0; i < maxbaoliu; i++)
 	{
-		if (!strcmp(a, baoliu[i].str))//ÈôÆ¥Åä
-			return baoliu[i].wt;//·µ»Ø±£Áô×ÖµÄµ¥´Ê
+		if (!strcmp(a, baoliu[i].str))//è‹¥åŒ¹é…
+			return baoliu[i].wt;//è¿”å›žä¿ç•™å­—çš„å•è¯
 	}
-	//ÈôÎ´ÔÚ±£Áô×ÖÖÐÕÒµ½£¬ÔòÎª±íÊ¾·ûID
+	//è‹¥æœªåœ¨ä¿ç•™å­—ä¸­æ‰¾åˆ°ï¼Œåˆ™ä¸ºè¡¨ç¤ºç¬¦ID
 	return ID;
 }
-ChainNodeType *chainHead;//Á´±í±íÍ·
-void getToken()//È¡µÃµ¥´Êº¯Êý
+ChainNodeType *chainHead;//é“¾è¡¨è¡¨å¤´
+void getToken()//å–å¾—å•è¯å‡½æ•°
 {
 
-	ChainNodeType *currentNode;//Ö¸Ïò´¦Àíµ±Ç°tokenµÄµ±Ç°½ÚµãÖ¸Õë
-	ChainNodeType *preNode;//Ö¸ÏòÇ°Çý
-	TokenType *currentToken=(TokenType*)malloc(sizeof(TokenType));//´æ·Åµ±Ç°µÄtoken
+	ChainNodeType *currentNode;//æŒ‡å‘å¤„ç†å½“å‰tokençš„å½“å‰èŠ‚ç‚¹æŒ‡é’ˆ
+	ChainNodeType *preNode;//æŒ‡å‘å‰é©±
+	TokenType *currentToken=(TokenType*)malloc(sizeof(TokenType));//å­˜æ”¾å½“å‰çš„token
 	memset(currentToken->Mean, 0, 41 * sizeof(char));
 	chainHead = (ChainNodeType*)malloc(chainnodelenghth);
 	preNode = (ChainNodeType*)malloc(chainnodelenghth);
@@ -93,44 +93,44 @@ void getToken()//È¡µÃµ¥´Êº¯Êý
 	memset(currentNode->Token.Mean, 0, 41 * sizeof(char));
 	preNode = chainHead;
 	currentNode = chainHead;
-	//Ö¸ÏòÏÂÒ»¸ö½ÚµãµÄÖ¸ÕëÎª¿Õ
+	//æŒ‡å‘ä¸‹ä¸€ä¸ªèŠ‚ç‚¹çš„æŒ‡é’ˆä¸ºç©º
 	(*currentNode).nextToken = NULL;
-	//µ±Ç°ÕýÔÚÊ¶±ð×Ö·ûÎ»ÖÃ³õÊ¼Îª0
+	//å½“å‰æ­£åœ¨è¯†åˆ«å­—ç¬¦ä½ç½®åˆå§‹ä¸º0
 	do {
 		int tokenwordid = 0;
-		//×Ô¶¯»ú±êÖ¾Î»Îª¿ªÊ¼START
+		//è‡ªåŠ¨æœºæ ‡å¿—ä½ä¸ºå¼€å§‹START
 		StateType state = START;
-		//tokenwordµÄ´æ´¢±êÖ¾save£¬¾ö¶¨µ±Ç°Ê¶±ð×Ö·ûÊÇ·ñ´æÈëµ±Ç°´ÊÔª´æ´¢Çøtokenword
+		//tokenwordçš„å­˜å‚¨æ ‡å¿—saveï¼Œå†³å®šå½“å‰è¯†åˆ«å­—ç¬¦æ˜¯å¦å­˜å…¥å½“å‰è¯å…ƒå­˜å‚¨åŒºtokenword
 		int save;
-		//µ±Ç°È·¶¨ÓÅÏÈ×Ô¶¯»ú×´Ì¬state²»ÊÇÍê³É×´Ì¬DONE
+		//å½“å‰ç¡®å®šä¼˜å…ˆè‡ªåŠ¨æœºçŠ¶æ€stateä¸æ˜¯å®ŒæˆçŠ¶æ€DONE
 		while (state != DONE)
 		{
 			int c = getnext();
-			save = TRUE;//µ±Ç°ÕýÔÚÊ¶±ð×Ö·ûµÄ´æ´¢±êÖ¾
+			save = TRUE;//å½“å‰æ­£åœ¨è¯†åˆ«å­—ç¬¦çš„å­˜å‚¨æ ‡å¿—
 			switch (state)
 			{
 			case START:
-				if (isdigit(c))//µ±Ç°×Ö·ûcÎªÊý×ÖÔòÉèÖÃ³ÉÊý×Ö×´Ì¬
+				if (isdigit(c))//å½“å‰å­—ç¬¦cä¸ºæ•°å­—åˆ™è®¾ç½®æˆæ•°å­—çŠ¶æ€
 					state = INNUM;
-				else if (isalpha(c))//µ±Ç°×Ö·ûcÎª×ÖÄ£ÔòÉèÖÃ³É±êÊ¶·û×´Ì¬
+				else if (isalpha(c))//å½“å‰å­—ç¬¦cä¸ºå­—æ¨¡åˆ™è®¾ç½®æˆæ ‡è¯†ç¬¦çŠ¶æ€
 					state = INID;
-				else if (c == ':')//Ã°ºÅÎª¸³Öµ×´Ì¬
+				else if (c == ':')//å†’å·ä¸ºèµ‹å€¼çŠ¶æ€
 					state = INASSIGN;
-				else if (c == '.')//.ÎªÊý×éÏÂ±ê½çÏÞ×´Ì¬
+				else if (c == '.')//.ä¸ºæ•°ç»„ä¸‹æ ‡ç•Œé™çŠ¶æ€
 					state = INRANGE;
-				else if (c == '\'')//'Îª×Ö·û±êÖ¾×´Ì¬
+				else if (c == '\'')//'ä¸ºå­—ç¬¦æ ‡å¿—çŠ¶æ€
 				{
 					save = FALSE;
 					state = INCHAR;
 				}
-				else if ((c == ' ') || (c == '\t') || (c == '\n'))//¿Õ°×£¨¿Õ¸ñ£¬ÖÆ±í·û£¬»»ÐÐ·û)ÎÞÐè´æ´¢£¬saveÎªfalse
+				else if ((c == ' ') || (c == '\t') || (c == '\n'))//ç©ºç™½ï¼ˆç©ºæ ¼ï¼Œåˆ¶è¡¨ç¬¦ï¼Œæ¢è¡Œç¬¦)æ— éœ€å­˜å‚¨ï¼Œsaveä¸ºfalse
 					save = FALSE;
-				else if (c == '{')//×óÀ¨ºÅ×¢ÊÍ×´Ì¬£¬±íÊ¾²úÉú×¢ÊÍÎÞÐè´æ´¢
+				else if (c == '{')//å·¦æ‹¬å·æ³¨é‡ŠçŠ¶æ€ï¼Œè¡¨ç¤ºäº§ç”Ÿæ³¨é‡Šæ— éœ€å­˜å‚¨
 				{
 					save = FALSE;
 					state = INCOMMENT;
 				}
-				else//·ñÔòÎªÍê³É×´Ì¬£¬½øÒ»²½·ÖÀà´¦Àí×Ô¶¯»ú½áÊøÎ»ÖÃ
+				else//å¦åˆ™ä¸ºå®ŒæˆçŠ¶æ€ï¼Œè¿›ä¸€æ­¥åˆ†ç±»å¤„ç†è‡ªåŠ¨æœºç»“æŸä½ç½®
 				{
 					state = DONE;
 					switch (c)
@@ -182,13 +182,13 @@ void getToken()//È¡µÃµ¥´Êº¯Êý
 					}
 				}
 				break;
-			case INCOMMENT://×¢ÊÍ×´Ì¬
+			case INCOMMENT://æ³¨é‡ŠçŠ¶æ€
 				if (c == EOF)
 				{
-					state = DONE;//ÈôÎªEOFÔòµ±Ç°DFA×´Ì¬ÉèÖÃÎªÍê³É×´Ì¬
+					state = DONE;//è‹¥ä¸ºEOFåˆ™å½“å‰DFAçŠ¶æ€è®¾ç½®ä¸ºå®ŒæˆçŠ¶æ€
 					currentToken->Word = ENDFILE;
 				}
-				else if (c == '}')//×¢ÊÍ½áÊø
+				else if (c == '}')//æ³¨é‡Šç»“æŸ
 				{
 					state = START;
 					save = FALSE;
@@ -196,11 +196,11 @@ void getToken()//È¡µÃµ¥´Êº¯Êý
 				else
 					save = FALSE;
 				break;
-			case INASSIGN://¸³Öµ×´Ì¬
+			case INASSIGN://èµ‹å€¼çŠ¶æ€
 				state = DONE;
 				if (c == '=')
 					currentToken->Word = ASSIGN;
-				else//£ººóÃæ²»ÊÇ=Ôò»ØÍËÒ»¸ö×Ö·û
+				else//ï¼šåŽé¢ä¸æ˜¯=åˆ™å›žé€€ä¸€ä¸ªå­—ç¬¦
 				{
 					disgetnext();
 					save = FALSE;
@@ -220,12 +220,12 @@ void getToken()//È¡µÃµ¥´Êº¯Êý
 				}
 				break;
 			case INNUM:
-				if (!isdigit(c))//Èç¹û×Ö·ûc²»ÊÇÊýÔò»ØÍË´æ´¢Îªfalse¡£
+				if (!isdigit(c))//å¦‚æžœå­—ç¬¦cä¸æ˜¯æ•°åˆ™å›žé€€å­˜å‚¨ä¸ºfalseã€‚
 				{
 					disgetnext();
 					save = FALSE;
 					state = DONE;
-					currentToken->Word = INTC;//Êý×Öµ¥´Ê
+					currentToken->Word = INTC;//æ•°å­—å•è¯
 				}
 				break;
 			case INCHAR:
@@ -258,33 +258,33 @@ void getToken()//È¡µÃµ¥´Êº¯Êý
 				}
 				break;
 			case INID:
-				if (!isalnum(c))//²»ÊÇ×ÖÄ¸»ØÍËÒ»¸ñ
+				if (!isalnum(c))//ä¸æ˜¯å­—æ¯å›žé€€ä¸€æ ¼
 				{
 					disgetnext();
 					save = FALSE;
 					state = DONE;
-					currentToken->Word = ID;//±êÊ¶·ûµ¥´Ê
+					currentToken->Word = ID;//æ ‡è¯†ç¬¦å•è¯
 				}
 				break;
-			case DONE://È·¶¨ÐÔÓÅÏÈ×Ô¶¯»ú´¦ÓÚµ¥´Ê½áÊøÎ»ÖÃ
+			case DONE://ç¡®å®šæ€§ä¼˜å…ˆè‡ªåŠ¨æœºå¤„äºŽå•è¯ç»“æŸä½ç½®
 				break;
 			default:
-				//´Ê·¨É¨ÃèÆ÷²úÉú´íÎóµÄ×´Ì¬stateÐ´ÈëÁÐ±íÎÄ¼þlisting
+				//è¯æ³•æ‰«æå™¨äº§ç”Ÿé”™è¯¯çš„çŠ¶æ€stateå†™å…¥åˆ—è¡¨æ–‡ä»¶listing
 				fprintf(listing, "First Bug: state= %d\n", state);
 				Error = TRUE;
 				state = DONE;
 				currentToken->Word = ERROR;
 				break;
 			}
-			//µ±Ç°×Ö·û´æ´¢×´Ì¬Îªture£¬ÇÒµ±Ç°µ¥´ÊÒÑ¾­Ê¶±ð²¿·ÖÎ´³¬¹ýµ¥´Ê×î´ó³¤¶È
-			//½«µ±Ç°×Ö·ûÐ´Èëµ±Ç°ÕýÔÚÊ¶±ðµ¥´Ê´æ´¢Çøtokenword
+			//å½“å‰å­—ç¬¦å­˜å‚¨çŠ¶æ€ä¸ºtureï¼Œä¸”å½“å‰å•è¯å·²ç»è¯†åˆ«éƒ¨åˆ†æœªè¶…è¿‡å•è¯æœ€å¤§é•¿åº¦
+			//å°†å½“å‰å­—ç¬¦å†™å…¥å½“å‰æ­£åœ¨è¯†åˆ«å•è¯å­˜å‚¨åŒºtokenword
 			if ((save) && (tokenwordid <= maxtokenlenhth))
 				tokenword[tokenwordid++] = (char)c;
 			if (state == DONE)
 			{
-				//µ±Ç°DFAÊ¶±ðÍê³ÉÔÚµ±Ç°´æ´¢Çø¼ÓÉÏ½áÊø±êÖ¾
+				//å½“å‰DFAè¯†åˆ«å®Œæˆåœ¨å½“å‰å­˜å‚¨åŒºåŠ ä¸Šç»“æŸæ ‡å¿—
 				tokenword[tokenwordid] = '\0';
-				if (currentToken->Word == ID)//Èç¹ûÎª±êÊ¶·ûµ¥´ÊÀàÐÍ²é¿´ÊÇ·ñÎª±£Áô×Öµ¥´Ê
+				if (currentToken->Word == ID)//å¦‚æžœä¸ºæ ‡è¯†ç¬¦å•è¯ç±»åž‹æŸ¥çœ‹æ˜¯å¦ä¸ºä¿ç•™å­—å•è¯
 				{
 					currentToken->Word = checkbaoliu(tokenword);
 					if (currentToken->Word == ID)
@@ -293,25 +293,25 @@ void getToken()//È¡µÃµ¥´Êº¯Êý
 			}
 		}
 
-		currentToken->lineshow = lineno;//ÐÐºÅÐÅÏ¢
+		currentToken->lineshow = lineno;//è¡Œå·ä¿¡æ¯
 		strcpy(currentToken->Mean, tokenword);
-		//½«ÒÑ¾­´¦ÀíÍêµÄtoken´æÈëÁ´±íµÄtoken²¿·Ö
+		//å°†å·²ç»å¤„ç†å®Œçš„tokenå­˜å…¥é“¾è¡¨çš„tokenéƒ¨åˆ†
 		((*currentNode).Token).lineshow = currentToken->lineshow;
 		((*currentNode).Token).Word = currentToken->Word;
 		strcpy(((*currentNode).Token).Mean, currentToken->Mean);
-		Tokennum++;//×ÜÊýÄ¿¼ÓÒ»
-		//Èô²»ÊÇµÚÒ»¸ö½ÚµãÔò½«µ±Ç°½ÚµãÁ¬ÈëÁ´±í
+		Tokennum++;//æ€»æ•°ç›®åŠ ä¸€
+		//è‹¥ä¸æ˜¯ç¬¬ä¸€ä¸ªèŠ‚ç‚¹åˆ™å°†å½“å‰èŠ‚ç‚¹è¿žå…¥é“¾è¡¨
 		if (preNode != currentNode)
 		{
 			preNode->nextToken = currentNode;
 			preNode = currentNode;
 		}
-		//ÉêÇëÒ»¸öÐÂµÄ½Úµã¼ÇÂ¼ÏÂÒ»¸öTokenÐÅÏ¢
+		//ç”³è¯·ä¸€ä¸ªæ–°çš„èŠ‚ç‚¹è®°å½•ä¸‹ä¸€ä¸ªTokenä¿¡æ¯
 		currentNode = (ChainNodeType*)malloc(chainnodelenghth);
 		memset(currentNode->Token.Mean, 0, 41 * sizeof(char));
 		currentNode->nextToken = NULL;
 	} while ((currentToken->Word) != ENDFILE);
-	//½«ÓÉchainheadÖ¸ÏòµÄtokenÁ´±í´æÈëÎÄ¼þtokenlistÖÐ
+	//å°†ç”±chainheadæŒ‡å‘çš„tokené“¾è¡¨å­˜å…¥æ–‡ä»¶tokenlistä¸­
 	ChainToFile(chainHead);
 }
 
@@ -319,15 +319,15 @@ void getToken()//È¡µÃµ¥´Êº¯Êý
 
 
 /**************************************************************/
-//                           Óï·¨·ÖÎö                           //
+//                           è¯­æ³•åˆ†æž                           //
 /***************************************************************/
 
 char *tempname;
-static TreeNode*parse();//Óï·¨·ÖÎöº¯Êý
-static TreeNode*Program();//×Ü³ÌÐò
-static TreeNode*ProgramHead();//³ÌÐòÍ·
-static TreeNode*DeclarePart();//³ÌÐòÉùÃ÷
-static TreeNode*TypeDec();//ÀàÐÍÉùÃ÷
+static TreeNode*parse();//è¯­æ³•åˆ†æžå‡½æ•°
+static TreeNode*Program();//æ€»ç¨‹åº
+static TreeNode*ProgramHead();//ç¨‹åºå¤´
+static TreeNode*DeclarePart();//ç¨‹åºå£°æ˜Ž
+static TreeNode*TypeDec();//ç±»åž‹å£°æ˜Ž
 static TreeNode*TypeDeclaration();
 static TreeNode*TypeDecList();
 static TreeNode*TypeDecMore();
@@ -340,27 +340,27 @@ static TreeNode*FieldDecList();
 static TreeNode*FieldDecMore();
 static void IdList(TreeNode*t);
 static void IdMore(TreeNode*t);
-static void TypeName(TreeNode*t);//ÀàÐÍÃû
-static TreeNode*VarDec();//±äÁ¿ÉùÃ÷
+static void TypeName(TreeNode*t);//ç±»åž‹å
+static TreeNode*VarDec();//å˜é‡å£°æ˜Ž
 static TreeNode*VarDeclaration();
 static TreeNode*VarDecList();
 static TreeNode*VarDecMore();
 static void VarIdList(TreeNode*t);
 static void VarIdMore(TreeNode*t);
-static TreeNode*ProDec();//¹ý³ÌÉùÃ÷
+static TreeNode*ProDec();//è¿‡ç¨‹å£°æ˜Ž
 static TreeNode*ProDeclaration();
-static void ParamList(TreeNode*t);//²ÎÊýÉùÃ÷
+static void ParamList(TreeNode*t);//å‚æ•°å£°æ˜Ž
 static TreeNode*ParamDecList();
 static TreeNode*Param();
 static TreeNode*ParamMore();
 static void FormList(TreeNode*t);
 static void FidMore(TreeNode*t);
-static TreeNode*ProcDecPart();//¹ý³ÌÖÐµÄÉùÃ÷
-static TreeNode*ProcBody();//¹ý³ÌÌå
+static TreeNode*ProcDecPart();//è¿‡ç¨‹ä¸­çš„å£°æ˜Ž
+static TreeNode*ProcBody();//è¿‡ç¨‹ä½“
 static TreeNode*ProgramBody();
-static TreeNode*StmList();//Óï¾äÐòÁÐ
+static TreeNode*StmList();//è¯­å¥åºåˆ—
 static TreeNode*StmMore();
-static TreeNode*Stm();//Óï¾ä
+static TreeNode*Stm();//è¯­å¥
 static TreeNode*AssCall();
 static TreeNode*AssignmentRest();
 static TreeNode*ConditionalStm();
@@ -371,20 +371,20 @@ static TreeNode*ReturnStm();
 static TreeNode*CallStmRest();
 static TreeNode*ActParamList();
 static TreeNode*ActParamMore();
-static TreeNode*Exception();//±í´ïÊ½
-static TreeNode*simple_exp();//¼òµ¥±í´ïÊ½
-static TreeNode*term();//Ïî
-static TreeNode*factor();//Òò×Ó
+static TreeNode*Exception();//è¡¨è¾¾å¼
+static TreeNode*simple_exp();//ç®€å•è¡¨è¾¾å¼
+static TreeNode*term();//é¡¹
+static TreeNode*factor();//å› å­
 static TreeNode*variable();
 static void  VariMore(TreeNode*t);
 static TreeNode*FieldVar();
 static void FieldVarMore(TreeNode*t);
 
 
-// º¯ÊýÃû syntaxError												
-// ¹¦  ÄÜ Óï·¨´íÎó´¦Àíº¯Êý											
-// Ëµ  Ã÷ ½«º¯Êý²ÎÊýmessageÖ¸¶¨µÄ´íÎóÐÅÏ¢¸ñÊ½»¯Ð´ÈëÁÐ±íÎÄ¼þlisting	
-//	  ÉèÖÃ´íÎó×·×Ù±êÖ¾ErrorÎªTRUE								
+// å‡½æ•°å syntaxError												
+// åŠŸ  èƒ½ è¯­æ³•é”™è¯¯å¤„ç†å‡½æ•°											
+// è¯´  æ˜Ž å°†å‡½æ•°å‚æ•°messageæŒ‡å®šçš„é”™è¯¯ä¿¡æ¯æ ¼å¼åŒ–å†™å…¥åˆ—è¡¨æ–‡ä»¶listing	
+//	  è®¾ç½®é”™è¯¯è¿½è¸ªæ ‡å¿—Errorä¸ºTRUE								
 
 static void syntaxError(const char * message)
 
@@ -394,15 +394,15 @@ static void syntaxError(const char * message)
 	Error = TRUE;
 }
 
-//×Ü³ÌÐò´¦Àí·ÖÎö³ÌÐò
-//²úÉúÊ½£º< Program  > ::= ProgramHead DeclarePart ProgramBody
-//¸ù¾Ý²úÉúÊ½Éú³ÉÓï·¨Ê÷µÄ¸ù½Úµã£¬µ÷ÓÃ³ÌÐòÍ·²¿µÄ·ÖÎöº¯Êý£¬ÉùÃ÷²¿·Ö·ÖÎöº¯Êý£¬³ÌÐòÌå²¿·Ö·ÖÎöº¯Êý£¬·Ö±ðÎªÓï·¨Ê÷µÄÈý¸ö¶ù×Ó½Úµã£¬
-//Æ¥Åä³ÌÐò½áÊø±êÖ¾.£¨DOT£©Èç¹û´¦Àí³É¹¦·µ»Øroot·ñÔò·µ»Ønull
+//æ€»ç¨‹åºå¤„ç†åˆ†æžç¨‹åº
+//äº§ç”Ÿå¼ï¼š< Program  > ::= ProgramHead DeclarePart ProgramBody
+//æ ¹æ®äº§ç”Ÿå¼ç”Ÿæˆè¯­æ³•æ ‘çš„æ ¹èŠ‚ç‚¹ï¼Œè°ƒç”¨ç¨‹åºå¤´éƒ¨çš„åˆ†æžå‡½æ•°ï¼Œå£°æ˜Žéƒ¨åˆ†åˆ†æžå‡½æ•°ï¼Œç¨‹åºä½“éƒ¨åˆ†åˆ†æžå‡½æ•°ï¼Œåˆ†åˆ«ä¸ºè¯­æ³•æ ‘çš„ä¸‰ä¸ªå„¿å­èŠ‚ç‚¹ï¼Œ
+//åŒ¹é…ç¨‹åºç»“æŸæ ‡å¿—.ï¼ˆDOTï¼‰å¦‚æžœå¤„ç†æˆåŠŸè¿”å›žrootå¦åˆ™è¿”å›žnull
 TreeNode*Program()
 {
 	TreeNode*t = ProgramHead();
 	TreeNode*q = DeclarePart();
-	TreeNode*s = ProcBody();//Èý¸ö¶ù×Ó½Úµã
+	TreeNode*s = ProcBody();//ä¸‰ä¸ªå„¿å­èŠ‚ç‚¹
 	TreeNode*root = newroot();
 	if (root != NULL)
 	{
@@ -413,9 +413,9 @@ TreeNode*Program()
 	match(DOT);
 	return root;
 }
-//³ÌÐòÍ·´¦Àíº¯Êý
-//²úÉúÊ½ < programHead > ::= PROGRAM  ProgramName
-//·Ö¾Ö¸ù¾Ý²úÉúÊ½µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý
+//ç¨‹åºå¤´å¤„ç†å‡½æ•°
+//äº§ç”Ÿå¼ < programHead > ::= PROGRAM  ProgramName
+//åˆ†å±€æ ¹æ®äº§ç”Ÿå¼è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°
 TreeNode*ProgramHead()
 {
 	TreeNode*t = newProhead();
@@ -428,9 +428,9 @@ TreeNode*ProgramHead()
 	match(ID);
 	return t;
 }
-//ÉùÃ÷²¿·Ö´¦Àíº¯Êý
-//²úÉúÊ½£º< declarePart > ::= typeDec  varDec  procDec
-//º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý
+//å£°æ˜Žéƒ¨åˆ†å¤„ç†å‡½æ•°
+//äº§ç”Ÿå¼ï¼š< declarePart > ::= typeDec  varDec  procDec
+//å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°
 TreeNode*DeclarePart()
 {
 	TreeNode * typeP = newTypeNode();
@@ -448,7 +448,7 @@ TreeNode*DeclarePart()
 			typeP = NULL;
 		}
 	}
-	/*±äÁ¿*/
+	/*å˜é‡*/
 	TreeNode * varP = newDecANode(Var);
 	if (varP != NULL)
 	{
@@ -462,7 +462,7 @@ TreeNode*DeclarePart()
 			varP = NULL;
 		}
 	}
-	/*º¯Êý*/
+	/*å‡½æ•°*/
 	TreeNode * s = ProDec();
 
 	if (s == NULL) {}
@@ -483,10 +483,10 @@ TreeNode*DeclarePart()
 	}
 	return pp;
 }
-// º¯ÊýÃû varDec		 						     	            
-// ¹¦  ÄÜ ±äÁ¿ÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < varDec > ::=  ¦Å |  varDeclaration                      
-// º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// å‡½æ•°å varDec		 						     	            
+// åŠŸ  èƒ½ å˜é‡å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < varDec > ::=  Îµ |  varDeclaration                      
+// å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 
 TreeNode*VarDec()
 {
@@ -505,10 +505,10 @@ TreeNode*VarDec()
 	}
 	return t;
 }
-// º¯ÊýÃû varDeclaration		 						            
-// ¹¦  ÄÜ ±äÁ¿ÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        
-// ²úÉúÊ½ < varDeclaration > ::=  VAR  varDecList                 
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  	
+// å‡½æ•°å varDeclaration		 						            
+// åŠŸ  èƒ½ å˜é‡å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        
+// äº§ç”Ÿå¼ < varDeclaration > ::=  VAR  varDecList                 
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  	
 TreeNode*VarDeclaration()
 {
 
@@ -520,10 +520,10 @@ TreeNode*VarDeclaration()
 	return t;
 
 }
-/* º¯ÊýÃû varDecList		 						                */
-/* ¹¦  ÄÜ ±äÁ¿ÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	*/
-/* ²úÉúÊ½ < varDecList > ::=  typeName varIdList; varDecMore        */
-/* Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  */
+/* å‡½æ•°å varDecList		 						                */
+/* åŠŸ  èƒ½ å˜é‡å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	*/
+/* äº§ç”Ÿå¼ < varDecList > ::=  typeName varIdList; varDecMore        */
+/* è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  */
 /********************************************************************/
 TreeNode * VarDecList()
 {
@@ -541,10 +541,10 @@ TreeNode * VarDecList()
 	}
 	return t;
 }
-//º¯ÊýÃû varDecMore		 						                
-// ¹¦  ÄÜ ±äÁ¿ÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < varDecMore > ::=  ¦Å |  varDecList                      
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+//å‡½æ•°å varDecMore		 						                
+// åŠŸ  èƒ½ å˜é‡å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < varDecMore > ::=  Îµ |  varDecList                      
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * VarDecMore()
 {
 	TreeNode * t = NULL;
@@ -568,10 +568,10 @@ TreeNode * VarDecMore()
 	}
 	return t;
 }
-// º¯ÊýÃû typeName		 							  	            
-// ¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < typeName > ::= baseType | structureType | id            
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// å‡½æ•°å typeName		 							  	            
+// åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < typeName > ::= baseType | structureType | id            
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 void TypeName(TreeNode * t)
 {
 	if (t != NULL)
@@ -592,10 +592,10 @@ void TypeName(TreeNode * t)
 			break;
 		}
 }
-// º¯ÊýÃû structureType		 							            
-// ¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < structureType > ::=  arrayType | recType                
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// å‡½æ•°å structureType		 							            
+// åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < structureType > ::=  arrayType | recType                
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 void StructureType(TreeNode * t)
 {
 	switch (token.Word)
@@ -614,9 +614,9 @@ void StructureType(TreeNode * t)
 	}
 }
 
-// ¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < arrayType > ::=  ARRAY [low..top] OF baseType           
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < arrayType > ::=  ARRAY [low..top] OF baseType           
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 void ArrayType(TreeNode * t)
 {
 	match(ARRAY);
@@ -638,10 +638,10 @@ void ArrayType(TreeNode * t)
 	t->Figure.ArrayFigure.childtype = t->kind.dec;
 	t->kind.dec = Array;
 }
-// º¯ÊýÃû procBody		 			  	                           
-// ¹¦  ÄÜ º¯ÊýÌå²¿·ÖµÄ´¦Àíº¯Êý	                    	        	
-// ²úÉúÊ½ < procBody > ::=  programBody                            
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// å‡½æ•°å procBody		 			  	                           
+// åŠŸ  èƒ½ å‡½æ•°ä½“éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                    	        	
+// äº§ç”Ÿå¼ < procBody > ::=  programBody                            
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * ProcBody(void)
 {
 	TreeNode * t = ProgramBody();
@@ -649,9 +649,9 @@ TreeNode * ProcBody(void)
 		syntaxError("a program body is requested!");
 	return t;
 }
-// ¹¦  ÄÜ ³ÌÐòÌå²¿·ÖµÄ´¦Àíº¯Êý	                    	        	
-// ²úÉúÊ½ < programBody > ::=  BEGIN  stmList   END                 
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ ç¨‹åºä½“éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                    	        	
+// äº§ç”Ÿå¼ < programBody > ::=  BEGIN  stmList   END                 
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 
 TreeNode* ProgramBody()
 {
@@ -665,9 +665,9 @@ TreeNode* ProgramBody()
 	match(END);
 	return t;
 }
-// ¹¦  ÄÜ º¯ÊýÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < procDec > ::=  ¦Å |  procDeclaration                    
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ å‡½æ•°å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < procDec > ::=  Îµ |  procDeclaration                    
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * ProcDec(void)
 {
 	TreeNode * t = NULL;
@@ -684,16 +684,16 @@ TreeNode * ProcDec(void)
 	}
 	return t;
 }
-// ¹¦  ÄÜ º¯ÊýÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < procDeclaration > ::=  PROCEDURE                        
+// åŠŸ  èƒ½ å‡½æ•°å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < procDeclaration > ::=  PROCEDURE                        
 //                                 ProcName(paramList);             
 //                                 procDecPart                      
 //                                 procBody                         
 //                                 procDec                          
-//Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
-//        º¯ÊýµÄ¸ù½ÚµãÓÃÓÚ¼ÇÂ¼¸Ãº¯ÊýµÄÃû×Ö£»µÚÒ»¸ö×Ó½ÚµãÖ¸Ïò²ÎÊý½Ú  
-//        µã£¬µÚ¶þ¸ö½ÚµãÖ¸Ïòº¯ÊýÖÐµÄÉùÃ÷²¿·Ö½Úµã£»µÚÈý¸ö½ÚµãÖ¸Ïòº¯  
-//       ÊýÌå¡£
+//è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
+//        å‡½æ•°çš„æ ¹èŠ‚ç‚¹ç”¨äºŽè®°å½•è¯¥å‡½æ•°çš„åå­—ï¼›ç¬¬ä¸€ä¸ªå­èŠ‚ç‚¹æŒ‡å‘å‚æ•°èŠ‚  
+//        ç‚¹ï¼Œç¬¬äºŒä¸ªèŠ‚ç‚¹æŒ‡å‘å‡½æ•°ä¸­çš„å£°æ˜Žéƒ¨åˆ†èŠ‚ç‚¹ï¼›ç¬¬ä¸‰ä¸ªèŠ‚ç‚¹æŒ‡å‘å‡½  
+//       æ•°ä½“ã€‚
 TreeNode * ProDeclaration()
 {
 	TreeNode * t = newProcNode();
@@ -718,17 +718,17 @@ TreeNode * ProDeclaration()
 	return t;
 }
 
-// ¹¦  ÄÜ º¯ÊýÖÐµÄÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý	             	        	
-// ²úÉúÊ½ < procDecPart > ::=  declarePart                          
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ å‡½æ•°ä¸­çš„å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°	             	        	
+// äº§ç”Ÿå¼ < procDecPart > ::=  declarePart                          
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * ProcDecPart(void)
 {
 	TreeNode * t = DeclarePart();
 	return t;
 }
-// ¹¦  ÄÜ º¯ÊýÉùÃ÷ÖÐ²ÎÊýÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý	        	        	
-// ²úÉúÊ½ < paramList > ::=  ¦Å |  paramDecList                     
-//Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ å‡½æ•°å£°æ˜Žä¸­å‚æ•°å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°	        	        	
+// äº§ç”Ÿå¼ < paramList > ::=  Îµ |  paramDecList                     
+//è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 void ParamList(TreeNode * t)
 {
 	TreeNode * p = NULL;
@@ -751,9 +751,9 @@ void ParamList(TreeNode * t)
 		break;
 	}
 }
-//¹¦  ÄÜ º¯ÊýÉùÃ÷ÖÐ²ÎÊýÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý	        	        	
-// ²úÉúÊ½ < paramDecList > ::=  param  paramMore                    
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+//åŠŸ  èƒ½ å‡½æ•°å£°æ˜Žä¸­å‚æ•°å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°	        	        	
+// äº§ç”Ÿå¼ < paramDecList > ::=  param  paramMore                    
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * ParamDecList()
 {
 	TreeNode * t = Param();
@@ -764,9 +764,9 @@ TreeNode * ParamDecList()
 	}
 	return t;
 }
-//¹¦  ÄÜ º¯ÊýÉùÃ÷ÖÐ²ÎÊýÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý	        	        	
-// ²úÉúÊ½ < param > ::=  typeName formList | VAR typeName formList  
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+//åŠŸ  èƒ½ å‡½æ•°å£°æ˜Žä¸­å‚æ•°å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°	        	        	
+// äº§ç”Ÿå¼ < param > ::=  typeName formList | VAR typeName formList  
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * Param()
 {
 	TreeNode * t = newDecNode();
@@ -798,9 +798,9 @@ TreeNode * Param()
 	}
 	return t;
 }
-//¹¦  ÄÜ º¯ÊýÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < procDec > ::=  ¦Å |  procDeclaration                    
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+//åŠŸ  èƒ½ å‡½æ•°å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < procDec > ::=  Îµ |  procDeclaration                    
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * ProDec()
 {
 	TreeNode * t = NULL;
@@ -817,9 +817,9 @@ TreeNode * ProDec()
 	}
 	return t;
 }
-//¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < baseType > ::=  INTEGER | CHAR                          
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+//åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < baseType > ::=  INTEGER | CHAR                          
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 void BaseType(TreeNode * t)
 {
 	switch (token.Word)
@@ -838,9 +838,9 @@ void BaseType(TreeNode * t)
 		break;
 	}
 }
-//¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < recType > ::=  RECORD fieldDecList END                  
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+//åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < recType > ::=  RECORD fieldDecList END                  
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 void RecType(TreeNode * t)
 {
 	TreeNode * p = NULL;
@@ -852,10 +852,10 @@ void RecType(TreeNode * t)
 		syntaxError("a record body is requested!");
 	match(END);
 }
-// ¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-//²úÉúÊ½ < fieldDecList > ::=   baseType idList ; fieldDecMore     
+// åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+//äº§ç”Ÿå¼ < fieldDecList > ::=   baseType idList ; fieldDecMore     
 //                             | arrayType idList; fieldDecMore    
-//Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã   
+//è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹   
 TreeNode * FieldDecList()
 {
 
@@ -888,9 +888,9 @@ TreeNode * FieldDecList()
 	}
 	return t;
 }
-//¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-//²úÉúÊ½ < fieldDecMore > ::=  ¦Å | fieldDecList                   
-//Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã   
+//åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+//äº§ç”Ÿå¼ < fieldDecMore > ::=  Îµ | fieldDecList                   
+//è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹   
 TreeNode * FieldDecMore()
 {
 	TreeNode * t = NULL;
@@ -909,9 +909,9 @@ TreeNode * FieldDecMore()
 	}
 	return t;
 }
-// ¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < idList > ::=  id  idMore                                
-//Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < idList > ::=  id  idMore                                
+//è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 void IdList(TreeNode * t)
 {
 	if (token.Word == ID)
@@ -922,9 +922,9 @@ void IdList(TreeNode * t)
 	}
 	IdMore(t);
 }
-// ¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < idMore > ::=  ¦Å |  , idList                            
-//Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < idMore > ::=  Îµ |  , idList                            
+//è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 void IdMore(TreeNode * t)
 {
 	switch (token.Word)
@@ -940,9 +940,9 @@ void IdMore(TreeNode * t)
 		break;
 	}
 }
-// ¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < typeDec > ::= ¦Å | TypeDeclaration                      
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < typeDec > ::= Îµ | TypeDeclaration                      
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * TypeDec()
 {
 	TreeNode * t = NULL;
@@ -959,9 +959,9 @@ TreeNode * TypeDec()
 	}
 	return t;
 }
-// ¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < TypeDeclaration > ::= TYPE  TypeDecList                 
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < TypeDeclaration > ::= TYPE  TypeDecList                 
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * TypeDeclaration()
 {
 	match(TYPE);
@@ -972,9 +972,9 @@ TreeNode * TypeDeclaration()
 	}
 	return t;
 }
-// ¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < TypeDecList > ::= typeId = typeName ; typeDecMore       
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < TypeDecList > ::= typeId = typeName ; typeDecMore       
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * TypeDecList()
 {
 	TreeNode * t = newDecNode();
@@ -991,9 +991,9 @@ TreeNode * TypeDecList()
 	}
 	return t;
 }
-// ¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < typeDecMore > ::=    ¦Å | TypeDecList                   
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < typeDecMore > ::=    Îµ | TypeDecList                   
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode *  TypeDecMore()
 {
 	TreeNode * t = NULL;
@@ -1013,9 +1013,9 @@ TreeNode *  TypeDecMore()
 	}
 	return t;
 }
-// ¹¦  ÄÜ ÀàÐÍÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-//²úÉúÊ½ < typeId > ::= id                                         
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ ç±»åž‹å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+//äº§ç”Ÿå¼ < typeId > ::= id                                         
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 void TypeId(TreeNode * t)
 {
 	int tnum = (t->samenum);
@@ -1027,9 +1027,9 @@ void TypeId(TreeNode * t)
 	t->samenum = tnum;
 	match(ID);
 }
-// ¹¦  ÄÜ ±äÁ¿ÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < varIdList > ::=  id  varIdMore                         
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ å˜é‡å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < varIdList > ::=  id  varIdMore                         
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 void VarIdList(TreeNode * t)
 {
 	if (token.Word == ID)
@@ -1045,9 +1045,9 @@ void VarIdList(TreeNode * t)
 	}
 	VarIdMore(t);
 }
-// ¹¦  ÄÜ ±äÁ¿ÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý						        	
-// ²úÉúÊ½ < varIdMore > ::=  ¦Å |  , varIdList                      
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ å˜é‡å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°						        	
+// äº§ç”Ÿå¼ < varIdMore > ::=  Îµ |  , varIdList                      
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 void VarIdMore(TreeNode * t)
 {
 	switch (token.Word)
@@ -1063,9 +1063,9 @@ void VarIdMore(TreeNode * t)
 		break;
 	}
 }
-// ¹¦  ÄÜ º¯ÊýÉùÃ÷ÖÐ²ÎÊýÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý	        	        	
-// ²úÉúÊ½ < paramMore > ::=  ¦Å | ; paramDecList                     
-//Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ å‡½æ•°å£°æ˜Žä¸­å‚æ•°å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°	        	        	
+// äº§ç”Ÿå¼ < paramMore > ::=  Îµ | ; paramDecList                     
+//è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * ParamMore()
 {
 	TreeNode * t = NULL;
@@ -1086,9 +1086,9 @@ TreeNode * ParamMore()
 	return t;
 }
 
-// ¹¦  ÄÜ Óï¾ä²¿·ÖµÄ´¦Àíº¯Êý	                    	        	
-// ²úÉúÊ½ < stmList > ::=  stm    stmMore                           
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ è¯­å¥éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                    	        	
+// äº§ç”Ÿå¼ < stmList > ::=  stm    stmMore                           
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * StmList()
 {
 	TreeNode * t = Stm();
@@ -1098,9 +1098,9 @@ TreeNode * StmList()
 			t->brother = p;
 	return t;
 }
-// ¹¦  ÄÜ Óï¾ä²¿·ÖµÄ´¦Àíº¯Êý	                    	        	
-// ²úÉúÊ½ < stmMore > ::=   ¦Å |  ; stmList                         
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ è¯­å¥éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                    	        	
+// äº§ç”Ÿå¼ < stmMore > ::=   Îµ |  ; stmList                         
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 
 TreeNode * StmMore()
 {
@@ -1122,14 +1122,14 @@ TreeNode * StmMore()
 	}
 	return t;
 }
-// ¹¦  ÄÜ Óï¾ä²¿·ÖµÄ´¦Àíº¯Êý	                    	        	
-// ²úÉúÊ½ < stm > ::=   conditionalStm   {IF}                       
+// åŠŸ  èƒ½ è¯­å¥éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                    	        	
+// äº§ç”Ÿå¼ < stm > ::=   conditionalStm   {IF}                       
 //                    | loopStm          {WHILE}                    
 //                    | inputStm         {READ}                     
 //                    | outputStm        {WRITE}                    
 //                    | returnStm        {RETURN}                   
 //                    | id  assCall      {id}                       
-//Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+//è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * Stm()
 {
 
@@ -1163,9 +1163,9 @@ TreeNode * Stm()
 	}
 	return t;
 }
-//¹¦  ÄÜ Ñ­»·Óï¾ä²¿·ÖµÄ´¦Àíº¯Êý	                    	        
-//²úÉúÊ½ < loopStm > ::=      WHILE exp DO stmList ENDWH           
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+//åŠŸ  èƒ½ å¾ªçŽ¯è¯­å¥éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                    	        
+//äº§ç”Ÿå¼ < loopStm > ::=      WHILE exp DO stmList ENDWH           
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * LoopStm()
 {
 	TreeNode * t = newSentenceNode(While);
@@ -1181,9 +1181,9 @@ TreeNode * LoopStm()
 	return t;
 }
 
-// ¹¦  ÄÜ Ìõ¼þÓï¾ä²¿·ÖµÄ´¦Àíº¯Êý	                    	        
-// ²úÉúÊ½ < conditionalStm > ::= IF exp THEN stmList ELSE stmList FI
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ æ¡ä»¶è¯­å¥éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                    	        
+// äº§ç”Ÿå¼ < conditionalStm > ::= IF exp THEN stmList ELSE stmList FI
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * ConditionalStm()
 {
 	TreeNode * t = newSentenceNode(If);
@@ -1204,10 +1204,10 @@ TreeNode * ConditionalStm()
 	match(FI);
 	return t;
 }
-// ¹¦  ÄÜ Óï¾ä²¿·ÖµÄ´¦Àíº¯Êý	                    	        	
-//²úÉúÊ½ < assCall > ::=   assignmentRest   {:=,LMIDPAREN,DOT}     
+// åŠŸ  èƒ½ è¯­å¥éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                    	        	
+//äº§ç”Ÿå¼ < assCall > ::=   assignmentRest   {:=,LMIDPAREN,DOT}     
 //                       | callStmRest      {(}                    
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * AssCall()
 {
 	TreeNode * t = NULL;
@@ -1228,19 +1228,19 @@ TreeNode * AssCall()
 	}
 	return t;
 }
-// ¹¦  ÄÜ º¯Êýµ÷ÓÃÓï¾ä²¿·ÖµÄ´¦Àíº¯Êý	                  	        
-// ²úÉúÊ½ < callStmRest > ::=  (actParamList)                       
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ å‡½æ•°è°ƒç”¨è¯­å¥éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                  	        
+// äº§ç”Ÿå¼ < callStmRest > ::=  (actParamList)                       
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * CallStmRest()
 {
 	TreeNode * t = newSentenceNode(Call);
 	match(LPAREN);
-	/*º¯Êýµ÷ÓÃÊ±£¬Æä×Ó½ÚµãÖ¸ÏòÊµ²Î*/
+	/*å‡½æ•°è°ƒç”¨æ—¶ï¼Œå…¶å­èŠ‚ç‚¹æŒ‡å‘å®žå‚*/
 	if (t != NULL)
 	{
 		t->noline = linelinshi;
 
-		/*º¯ÊýÃûµÄ½áµãÒ²ÓÃ±í´ïÊ½ÀàÐÍ½áµã*/
+		/*å‡½æ•°åçš„ç»“ç‚¹ä¹Ÿç”¨è¡¨è¾¾å¼ç±»åž‹ç»“ç‚¹*/
 		TreeNode * child0 = newExpNode(VarType);
 		if (child0 != NULL)
 		{
@@ -1254,9 +1254,9 @@ TreeNode * CallStmRest()
 	match(RPAREN);
 	return t;
 }
-// ¹¦  ÄÜ º¯Êýµ÷ÓÃÊµ²Î²¿·ÖµÄ´¦Àíº¯Êý	                	        
-// ²úÉúÊ½ < actParamList > ::=     ¦Å |  exp actParamMore           
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ å‡½æ•°è°ƒç”¨å®žå‚éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                	        
+// äº§ç”Ÿå¼ < actParamList > ::=     Îµ |  exp actParamMore           
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * ActParamList()
 {
 	TreeNode * t = NULL;
@@ -1277,9 +1277,9 @@ TreeNode * ActParamList()
 	}
 	return t;
 }
-// ¹¦  ÄÜ º¯Êýµ÷ÓÃÊµ²Î²¿·ÖµÄ´¦Àíº¯Êý	                	        
-// ²úÉúÊ½ < actParamMore > ::=     ¦Å |  , actParamList             
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ å‡½æ•°è°ƒç”¨å®žå‚éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                	        
+// äº§ç”Ÿå¼ < actParamMore > ::=     Îµ |  , actParamList             
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * ActParamMore()
 {
 	TreeNode * t = NULL;
@@ -1297,9 +1297,9 @@ TreeNode * ActParamMore()
 	}
 	return t;
 }
-// ¹¦  ÄÜ Êä³öÓï¾ä²¿·ÖµÄ´¦Àíº¯Êý	                    	        
-// ²úÉúÊ½ < outputStm > ::=   WRITE(exp)                            
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ è¾“å‡ºè¯­å¥éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                    	        
+// äº§ç”Ÿå¼ < outputStm > ::=   WRITE(exp)                            
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * OutputStm()
 {
 	TreeNode * t = newSentenceNode(Write);
@@ -1313,101 +1313,101 @@ TreeNode * OutputStm()
 	match(RPAREN);
 	return t;
 }
-// ¹¦  ÄÜ ±í´ïÊ½´¦Àíº¯Êý													
-// ²úÉúÊ½ < ±í´ïÊ½ > ::= < ¼òµ¥±í´ïÊ½ > [< ¹ØÏµÔËËã·û > < ¼òµ¥±í´ïÊ½ > ]	
-// Ëµ  Ã÷ ¸Ãº¯Êý¸ù¾Ý²úÉúÊ½µ÷ÓÃÏàÓ¦µÝ¹é´¦Àíº¯Êý,Éú³É±í´ïÊ½ÀàÐÍÓï·¨Ê÷½Úµã		
+// åŠŸ  èƒ½ è¡¨è¾¾å¼å¤„ç†å‡½æ•°													
+// äº§ç”Ÿå¼ < è¡¨è¾¾å¼ > ::= < ç®€å•è¡¨è¾¾å¼ > [< å…³ç³»è¿ç®—ç¬¦ > < ç®€å•è¡¨è¾¾å¼ > ]	
+// è¯´  æ˜Ž è¯¥å‡½æ•°æ ¹æ®äº§ç”Ÿå¼è°ƒç”¨ç›¸åº”é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¡¨è¾¾å¼ç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹		
 TreeNode * Exception()
 
 {
-	/* µ÷ÓÃ¼òµ¥±í´ïÊ½´¦Àíº¯Êýsimple_exp(),·µ»ØÓï·¨Ê÷½ÚµãÖ¸Õë¸øt */
+	/* è°ƒç”¨ç®€å•è¡¨è¾¾å¼å¤„ç†å‡½æ•°simple_exp(),è¿”å›žè¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆç»™t */
 	TreeNode * t = simple_exp();
 
-	/* µ±Ç°µ¥´ÊtokenÎªÂß¼­ÔËËãµ¥´ÊLT»òÕßEQ */
+	/* å½“å‰å•è¯tokenä¸ºé€»è¾‘è¿ç®—å•è¯LTæˆ–è€…EQ */
 	if ((token.Word == LT) || (token.Word == EQ))
 	{
-		/* ´´½¨ÐÂµÄOpKÀàÐÍÓï·¨Ê÷½Úµã£¬ÐÂÓï·¨Ê÷½ÚµãÖ¸Õë¸³¸øp */
+		/* åˆ›å»ºæ–°çš„OpKç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹ï¼Œæ–°è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆèµ‹ç»™p */
 		TreeNode * p = newExpNode(Op);
 
-		/* ÐÂÓï·¨Ê÷½Úµãp´´½¨³É¹¦,³õÊ¼»¯pµÚÒ»¸ö×Ó½Úµã³ÉÔ±child[0]
-		 * ²¢½«µ±Ç°µ¥´Êtoken(ÎªEQ»òÕßLT)¸³¸øÓï·¨Ê÷½ÚµãpµÄÔËËã·û³ÉÔ±attr.op*/
+		/* æ–°è¯­æ³•æ ‘èŠ‚ç‚¹påˆ›å»ºæˆåŠŸ,åˆå§‹åŒ–pç¬¬ä¸€ä¸ªå­èŠ‚ç‚¹æˆå‘˜child[0]
+		 * å¹¶å°†å½“å‰å•è¯token(ä¸ºEQæˆ–è€…LT)èµ‹ç»™è¯­æ³•æ ‘èŠ‚ç‚¹pçš„è¿ç®—ç¬¦æˆå‘˜attr.op*/
 		if (p != NULL)
 		{
 			p->noline = linelinshi;
 			p->treechild[0] = t;
 			p->Figure.ExceptionFigure.op = token.Word;
 
-			/* ½«ÐÂµÄ±í´ïÊ½ÀàÐÍÓï·¨Ê÷½Úµãp×÷Îªº¯Êý·µ»ØÖµt */
+			/* å°†æ–°çš„è¡¨è¾¾å¼ç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹pä½œä¸ºå‡½æ•°è¿”å›žå€¼t */
 			t = p;
 		}
 
-		/* µ±Ç°µ¥´ÊtokenÓëÖ¸¶¨Âß¼­ÔËËã·ûµ¥´Ê(ÎªEQ»òÕßLT)Æ¥Åä */
+		/* å½“å‰å•è¯tokenä¸ŽæŒ‡å®šé€»è¾‘è¿ç®—ç¬¦å•è¯(ä¸ºEQæˆ–è€…LT)åŒ¹é… */
 		match(token.Word);
 
-		/* Óï·¨Ê÷½Úµãt·Ç¿Õ,µ÷ÓÃ¼òµ¥±í´ïÊ½´¦Àíº¯Êýsimple_exp()	*
-		 * º¯Êý·µ»ØÓï·¨Ê÷½ÚµãÖ¸Õë¸øtµÄµÚ¶þ×Ó½Úµã³ÉÔ±child[1]	*/
+		/* è¯­æ³•æ ‘èŠ‚ç‚¹téžç©º,è°ƒç”¨ç®€å•è¡¨è¾¾å¼å¤„ç†å‡½æ•°simple_exp()	*
+		 * å‡½æ•°è¿”å›žè¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆç»™tçš„ç¬¬äºŒå­èŠ‚ç‚¹æˆå‘˜child[1]	*/
 		if (t != NULL)
 			t->treechild[1] = simple_exp();
 	}
 
-	/* º¯Êý·µ»Ø±í´ïÊ½ÀàÐÍÓï·¨Ê÷½Úµãt */
+	/* å‡½æ•°è¿”å›žè¡¨è¾¾å¼ç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹t */
 	return t;
 }
-//¹¦  ÄÜ ¼òµ¥±í´ïÊ½´¦Àíº¯Êý											
-// ²úÉúÊ½ < ¼òµ¥±í´ïÊ½ >::=	< Ïî > { < ¼Ó·¨ÔËËã·û > < Ïî > }			
-// Ëµ  Ã÷ ¸Ãº¯Êý¸ù¾Ý²úÉúÊ½µ÷ÓÃÏàÓ¦µÝ¹é´¦Àíº¯Êý,Éú³É±í´ïÊ½ÀàÐÍÓï·¨Ê÷½Úµã	
+//åŠŸ  èƒ½ ç®€å•è¡¨è¾¾å¼å¤„ç†å‡½æ•°											
+// äº§ç”Ÿå¼ < ç®€å•è¡¨è¾¾å¼ >::=	< é¡¹ > { < åŠ æ³•è¿ç®—ç¬¦ > < é¡¹ > }			
+// è¯´  æ˜Ž è¯¥å‡½æ•°æ ¹æ®äº§ç”Ÿå¼è°ƒç”¨ç›¸åº”é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¡¨è¾¾å¼ç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹	
 TreeNode * simple_exp()
 
 {
-	/* µ÷ÓÃÔª´¦Àíº¯Êýterm(),º¯Êý·µ»ØÓï·¨Ê÷½ÚµãÖ¸Õë¸øt */
+	/* è°ƒç”¨å…ƒå¤„ç†å‡½æ•°term(),å‡½æ•°è¿”å›žè¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆç»™t */
 	TreeNode * t = term();
 
-	/* µ±Ç°µ¥´ÊtokenÎª¼Ó·¨ÔËËã·ûµ¥´ÊPLUS»òMINUS */
+	/* å½“å‰å•è¯tokenä¸ºåŠ æ³•è¿ç®—ç¬¦å•è¯PLUSæˆ–MINUS */
 	while ((token.Word == PLUS) || (token.Word == MINUS))
 
 	{
-		/* ´´½¨ÐÂOpK±í´ïÊ½ÀàÐÍÓï·¨Ê÷½Úµã£¬ÐÂÓï·¨Ê÷½ÚµãÖ¸Õë¸³¸øp */
+		/* åˆ›å»ºæ–°OpKè¡¨è¾¾å¼ç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹ï¼Œæ–°è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆèµ‹ç»™p */
 		TreeNode * p = newExpNode(Op);
 
-		/* Óï·¨Ê÷½Úµãp´´½¨³É¹¦,³õÊ¼»¯pµÚÒ»×Ó½Úµã³ÉÔ±child[0]	*
-		 * ·µ»ØÓï·¨Ê÷½ÚµãÖ¸Õë¸øpµÄÔËËã·û³ÉÔ±attr.op				*/
+		/* è¯­æ³•æ ‘èŠ‚ç‚¹påˆ›å»ºæˆåŠŸ,åˆå§‹åŒ–pç¬¬ä¸€å­èŠ‚ç‚¹æˆå‘˜child[0]	*
+		 * è¿”å›žè¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆç»™pçš„è¿ç®—ç¬¦æˆå‘˜attr.op				*/
 		if (p != NULL)
 		{
 			p->noline = linelinshi;
 			p->treechild[0] = t;
 			p->Figure.ExceptionFigure.op = token.Word;
 
-			/* ½«º¯Êý·µ»ØÖµt¸³³ÉÓï·¨Ê÷½Úµãp */
+			/* å°†å‡½æ•°è¿”å›žå€¼tèµ‹æˆè¯­æ³•æ ‘èŠ‚ç‚¹p */
 			t = p;
 
-			/* µ±Ç°µ¥´ÊtokenÓëÖ¸¶¨¼Ó·¨ÔËËãµ¥´Ê(ÎªPLUS»òMINUS)Æ¥Åä */
+			/* å½“å‰å•è¯tokenä¸ŽæŒ‡å®šåŠ æ³•è¿ç®—å•è¯(ä¸ºPLUSæˆ–MINUS)åŒ¹é… */
 			match(token.Word);
 
-			/* µ÷ÓÃÔª´¦Àíº¯Êýterm(),º¯Êý·µ»ØÓï·¨Ê÷½ÚµãÖ¸Õë¸øtµÄµÚ¶þ×Ó½Úµã³ÉÔ±child[1] */
+			/* è°ƒç”¨å…ƒå¤„ç†å‡½æ•°term(),å‡½æ•°è¿”å›žè¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆç»™tçš„ç¬¬äºŒå­èŠ‚ç‚¹æˆå‘˜child[1] */
 			t->treechild[1] = term();
 		}
 	}
-	/* º¯Êý·µ»Ø±í´ïÊ½ÀàÐÍÓï·¨Ê÷½Úµãt */
+	/* å‡½æ•°è¿”å›žè¡¨è¾¾å¼ç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹t */
 	return t;
 }
 
-// ¹¦  ÄÜ Ïî´¦Àíº¯Êý														
-// ²úÉúÊ½ < Ïî > ::= < Òò×Ó > { < ³Ë·¨ÔËËã·û > < Òò×Ó > }					
-// Ëµ  Ã÷ ¸Ãº¯Êý¸ù¾Ý²úÉúÊ½µ÷ÓÃÏàÓ¦µÝ¹é´¦Àíº¯Êý,Éú³É±í´ïÊ½ÀàÐÍÓï·¨Ê÷½Úµã		
+// åŠŸ  èƒ½ é¡¹å¤„ç†å‡½æ•°														
+// äº§ç”Ÿå¼ < é¡¹ > ::= < å› å­ > { < ä¹˜æ³•è¿ç®—ç¬¦ > < å› å­ > }					
+// è¯´  æ˜Ž è¯¥å‡½æ•°æ ¹æ®äº§ç”Ÿå¼è°ƒç”¨ç›¸åº”é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¡¨è¾¾å¼ç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹		
 TreeNode * term()
 
 {
-	/* µ÷ÓÃÒò×Ó´¦Àíº¯Êýfactor(),º¯Êý·µ»ØÓï·¨Ê÷½ÚµãÖ¸Õë¸øt */
+	/* è°ƒç”¨å› å­å¤„ç†å‡½æ•°factor(),å‡½æ•°è¿”å›žè¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆç»™t */
 	TreeNode * t = factor();
 
-	/* µ±Ç°µ¥´ÊtokenÎª³Ë·¨ÔËËã·ûµ¥´ÊTIMES»òOVER */
+	/* å½“å‰å•è¯tokenä¸ºä¹˜æ³•è¿ç®—ç¬¦å•è¯TIMESæˆ–OVER */
 	while ((token.Word == TIMES) || (token.Word == OVER))
 
 	{
-		/* ´´½¨ÐÂµÄOpK±í´ïÊ½ÀàÐÍÓï·¨Ê÷½Úµã,ÐÂ½ÚµãÖ¸Õë¸³¸øp */
+		/* åˆ›å»ºæ–°çš„OpKè¡¨è¾¾å¼ç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹,æ–°èŠ‚ç‚¹æŒ‡é’ˆèµ‹ç»™p */
 		TreeNode * p = newExpNode(Op);
 
-		/* ÐÂÓï·¨Ê÷½Úµãp´´½¨³É¹¦,³õÊ¼»¯µÚÒ»¸ö×Ó½Úµã³ÉÔ±child[0]Îªt	*
-		 * ½«µ±Ç°µ¥´Êtoken¸³Öµ¸øÓï·¨Ê÷½ÚµãpµÄÔËËã·û³ÉÔ±attr.op		*/
+		/* æ–°è¯­æ³•æ ‘èŠ‚ç‚¹påˆ›å»ºæˆåŠŸ,åˆå§‹åŒ–ç¬¬ä¸€ä¸ªå­èŠ‚ç‚¹æˆå‘˜child[0]ä¸ºt	*
+		 * å°†å½“å‰å•è¯tokenèµ‹å€¼ç»™è¯­æ³•æ ‘èŠ‚ç‚¹pçš„è¿ç®—ç¬¦æˆå‘˜attr.op		*/
 		if (p != NULL)
 		{
 			p->noline = linelinshi;
@@ -1416,22 +1416,22 @@ TreeNode * term()
 			t = p;
 		}
 
-		/* µ±Ç°µ¥´ÊtokenÓëÖ¸¶¨³Ë·¨ÔËËã·ûµ¥´Ê(ÎªTIMES»òOVER)Æ¥Åä */
+		/* å½“å‰å•è¯tokenä¸ŽæŒ‡å®šä¹˜æ³•è¿ç®—ç¬¦å•è¯(ä¸ºTIMESæˆ–OVER)åŒ¹é… */
 		match(token.Word);
 
-		/* µ÷ÓÃÒò×Ó´¦Àíº¯Êýfactor(),º¯Êý·µ»ØÓï·¨Ê÷½ÚµãÖ¸Õë¸³¸øpµÚ¶þ¸ö×Ó½Úµã³ÉÔ±child[1] */
+		/* è°ƒç”¨å› å­å¤„ç†å‡½æ•°factor(),å‡½æ•°è¿”å›žè¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆèµ‹ç»™pç¬¬äºŒä¸ªå­èŠ‚ç‚¹æˆå‘˜child[1] */
 		p->treechild[1] = factor();
 
 	}
-	/* º¯Êý·µ»Ø±í´ïÊ½ÀàÐÍÓï·¨Ê÷½Úµãt */
+	/* å‡½æ•°è¿”å›žè¡¨è¾¾å¼ç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹t */
 	return t;
 }
 
 
 
-// ¹¦  ÄÜ ·µ»ØÓï¾ä²¿·ÖµÄ´¦Àíº¯Êý	                    	        
-// ²úÉúÊ½ < returnStm > ::=   RETURN                                
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ è¿”å›žè¯­å¥éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                    	        
+// äº§ç”Ÿå¼ < returnStm > ::=   RETURN                                
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * ReturnStm()
 {
 	TreeNode * t = newSentenceNode(Return);
@@ -1441,9 +1441,9 @@ TreeNode * ReturnStm()
 	return t;
 }
 
-// ¹¦  ÄÜ ÊäÈëÓï¾ä²¿·ÖµÄ´¦Àíº¯Êý	                    	        
-// ²úÉúÊ½ < inputStm > ::=    READ(id)                              
-//Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ è¾“å…¥è¯­å¥éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                    	        
+// äº§ç”Ÿå¼ < inputStm > ::=    READ(id)                              
+//è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * InputStm()
 {
 	TreeNode * t = newSentenceNode(Read);
@@ -1461,20 +1461,20 @@ TreeNode * InputStm()
 }
 
 
-//¹¦  ÄÜ ¸³ÖµÓï¾ä²¿·ÖµÄ´¦Àíº¯Êý	                    	        
-//²úÉúÊ½ < assignmentRest > ::=  variMore : = exp                  
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+//åŠŸ  èƒ½ èµ‹å€¼è¯­å¥éƒ¨åˆ†çš„å¤„ç†å‡½æ•°	                    	        
+//äº§ç”Ÿå¼ < assignmentRest > ::=  variMore : = exp                  
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 TreeNode * AssignmentRest()
 {
 	TreeNode * t = newSentenceNode(Assign);
 
-	/* ¸³ÖµÓï¾ä½ÚµãµÄµÚÒ»¸ö¶ù×Ó½Úµã¼ÇÂ¼¸³ÖµÓï¾äµÄ×ó²à±äÁ¿Ãû£¬*
-	/* µÚ¶þ¸ö¶ù×Ó½áµã¼ÇÂ¼¸³ÖµÓï¾äµÄÓÒ²à±í´ïÊ½*/
+	/* èµ‹å€¼è¯­å¥èŠ‚ç‚¹çš„ç¬¬ä¸€ä¸ªå„¿å­èŠ‚ç‚¹è®°å½•èµ‹å€¼è¯­å¥çš„å·¦ä¾§å˜é‡åï¼Œ*
+	/* ç¬¬äºŒä¸ªå„¿å­ç»“ç‚¹è®°å½•èµ‹å€¼è¯­å¥çš„å³ä¾§è¡¨è¾¾å¼*/
 	if (t != NULL)
 	{
 		t->noline = linelinshi;
 
-		/*´¦ÀíµÚÒ»¸ö¶ù×Ó½áµã£¬Îª±äÁ¿±í´ïÊ½ÀàÐÍ½Úµã*/
+		/*å¤„ç†ç¬¬ä¸€ä¸ªå„¿å­ç»“ç‚¹ï¼Œä¸ºå˜é‡è¡¨è¾¾å¼ç±»åž‹èŠ‚ç‚¹*/
 		TreeNode * child1 = newExpNode(VarType);
 		if (child1 != NULL)
 		{
@@ -1485,10 +1485,10 @@ TreeNode * AssignmentRest()
 			t->treechild[0] = child1;
 		}
 
-		/*¸³ÖµºÅÆ¥Åä*/
+		/*èµ‹å€¼å·åŒ¹é…*/
 		match(ASSIGN);
 
-		/*´¦ÀíµÚ¶þ¸ö¶ù×Ó½Úµã*/
+		/*å¤„ç†ç¬¬äºŒä¸ªå„¿å­èŠ‚ç‚¹*/
 		t->treechild[1] = Exception();
 
 	}
@@ -1496,11 +1496,11 @@ TreeNode * AssignmentRest()
 }
 
 
-// ¹¦  ÄÜ ±äÁ¿´¦Àíº¯Êý												
-// ²úÉúÊ½ variMore   ::=  ¦Å                             			
+// åŠŸ  èƒ½ å˜é‡å¤„ç†å‡½æ•°												
+// äº§ç”Ÿå¼ variMore   ::=  Îµ                             			
 //                       | [exp]            {[}                     
 //                      | . fieldvar       {DOT}                  
-// Ëµ  Ã÷ ¸Ãº¯Êý¸ù¾Ý²úÉúÊ½µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àí±äÁ¿ÖÐµÄ¼¸ÖÖ²»Í¬ÀàÐÍ	
+// è¯´  æ˜Ž è¯¥å‡½æ•°æ ¹æ®äº§ç”Ÿå¼è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å˜é‡ä¸­çš„å‡ ç§ä¸åŒç±»åž‹	
 void VariMore(TreeNode * t)
 {
 	switch (token.Word)
@@ -1526,18 +1526,18 @@ void VariMore(TreeNode * t)
 	case LMIDPAREN:
 		match(LMIDPAREN);
 
-		/*ÓÃÀ´ÒÔºóÇó³öÆä±í´ïÊ½µÄÖµ£¬ËÍÈëÓÃÓÚÊý×éÏÂ±ê¼ÆËã*/
+		/*ç”¨æ¥ä»¥åŽæ±‚å‡ºå…¶è¡¨è¾¾å¼çš„å€¼ï¼Œé€å…¥ç”¨äºŽæ•°ç»„ä¸‹æ ‡è®¡ç®—*/
 		t->treechild[0] = Exception();
 
 		t->Figure.ExceptionFigure.varkind = ArrayMember;
 
-		/*´Ë±í´ïÊ½ÎªÊý×é³ÉÔ±±äÁ¿ÀàÐÍ*/
+		/*æ­¤è¡¨è¾¾å¼ä¸ºæ•°ç»„æˆå‘˜å˜é‡ç±»åž‹*/
 		t->treechild[0]->Figure.ExceptionFigure.varkind = Identifier;
 		match(RMIDPAREN);
 		break;
 	case DOT:
 		match(DOT);
-		/*µÚÒ»¸ö¶ù×ÓÖ¸ÏòÓò³ÉÔ±±äÁ¿½áµã*/
+		/*ç¬¬ä¸€ä¸ªå„¿å­æŒ‡å‘åŸŸæˆå‘˜å˜é‡ç»“ç‚¹*/
 		t->treechild[0] = FieldVar();
 
 		t->Figure.ExceptionFigure.varkind = FieldMember;
@@ -1551,12 +1551,12 @@ void VariMore(TreeNode * t)
 	}
 }
 
-// ¹¦  ÄÜ ±äÁ¿´¦Àíº¯Êý												
-// ²úÉúÊ½ fieldvar   ::=  id  fieldvarMore                          
-// Ëµ  Ã÷ ¸Ãº¯Êý¸ù¾Ý²úÉúÊ½£¬´¦ÀíÓò±äÁ¿£¬²¢Éú³ÉÆäÓï·¨Ê÷½Úµã       	
+// åŠŸ  èƒ½ å˜é‡å¤„ç†å‡½æ•°												
+// äº§ç”Ÿå¼ fieldvar   ::=  id  fieldvarMore                          
+// è¯´  æ˜Ž è¯¥å‡½æ•°æ ¹æ®äº§ç”Ÿå¼ï¼Œå¤„ç†åŸŸå˜é‡ï¼Œå¹¶ç”Ÿæˆå…¶è¯­æ³•æ ‘èŠ‚ç‚¹       	
 TreeNode * FieldVar(void)
 {
-	/*×¢Òâ£¬¿É·ñ½«´Ë´¦µÄIdEK¸ÄÎªÒ»¸öÐÂµÄ±êÊ¶£¬ÓÃÀ´¼ÇÂ¼¼ÇÂ¼ÀàÐÍµÄÓò*/
+	/*æ³¨æ„ï¼Œå¯å¦å°†æ­¤å¤„çš„IdEKæ”¹ä¸ºä¸€ä¸ªæ–°çš„æ ‡è¯†ï¼Œç”¨æ¥è®°å½•è®°å½•ç±»åž‹çš„åŸŸ*/
 	TreeNode * t = newExpNode(VarType);
 
 	if ((t != NULL) && (token.Word == ID))
@@ -1572,10 +1572,10 @@ TreeNode * FieldVar(void)
 	return t;
 }
 
-// ¹¦  ÄÜ ±äÁ¿´¦Àíº¯Êý												
-// ²úÉúÊ½ fieldvarMore   ::=  ¦Å                             		
+// åŠŸ  èƒ½ å˜é‡å¤„ç†å‡½æ•°												
+// äº§ç”Ÿå¼ fieldvarMore   ::=  Îµ                             		
 //                           | [exp]            {[}                 
-// Ëµ  Ã÷ ¸Ãº¯Êý¸ù¾Ý²úÉúÊ½µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦ÀíÓò±äÁ¿ÎªÊý×éÀàÐÍµÄÇé¿ö	
+// è¯´  æ˜Ž è¯¥å‡½æ•°æ ¹æ®äº§ç”Ÿå¼è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†åŸŸå˜é‡ä¸ºæ•°ç»„ç±»åž‹çš„æƒ…å†µ	
 void FieldVarMore(TreeNode * t)
 {
 	switch (token.Word)
@@ -1600,7 +1600,7 @@ void FieldVarMore(TreeNode * t)
 	case LMIDPAREN:
 		match(LMIDPAREN);
 
-		/*ÓÃÀ´ÒÔºóÇó³öÆä±í´ïÊ½µÄÖµ£¬ËÍÈëÓÃÓÚÊý×éÏÂ±ê¼ÆËã*/
+		/*ç”¨æ¥ä»¥åŽæ±‚å‡ºå…¶è¡¨è¾¾å¼çš„å€¼ï¼Œé€å…¥ç”¨äºŽæ•°ç»„ä¸‹æ ‡è®¡ç®—*/
 		t->treechild[0] = Exception();
 		t->treechild[0]->Figure.ExceptionFigure.varkind = ArrayMember;
 		match(RMIDPAREN);
@@ -1612,69 +1612,69 @@ void FieldVarMore(TreeNode * t)
 	}
 }
 
-// ¹¦  ÄÜ Òò×Ó´¦Àíº¯Êý														
-// ²úÉúÊ½ factor ::= ( exp ) | INTC | variable                  			
-// Ëµ  Ã÷ ¸Ãº¯Êý¸ù¾Ý²úÉúÊ½µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³É±í´ïÊ½ÀàÐÍÓï·¨Ê÷½Úµã	
+// åŠŸ  èƒ½ å› å­å¤„ç†å‡½æ•°														
+// äº§ç”Ÿå¼ factor ::= ( exp ) | INTC | variable                  			
+// è¯´  æ˜Ž è¯¥å‡½æ•°æ ¹æ®äº§ç”Ÿå¼è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¡¨è¾¾å¼ç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹	
 TreeNode * factor()
 
 {
-	/* º¯Êý·µ»ØÓï·¨Ê÷½ÚµãÖ¸Õët³õÊ¼ÎªÎªNULL */
+	/* å‡½æ•°è¿”å›žè¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtåˆå§‹ä¸ºä¸ºNULL */
 	TreeNode * t = NULL;
 
 	switch (token.Word)
 	{
 	case INTC:
 
-		/* ´´½¨ÐÂµÄConstK±í´ïÊ½ÀàÐÍÓï·¨Ê÷½Úµã,¸³Öµ¸øt */
+		/* åˆ›å»ºæ–°çš„ConstKè¡¨è¾¾å¼ç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹,èµ‹å€¼ç»™t */
 		t = newExpNode(Const);
 
-		/* ÐÂÓï·¨Ê÷½Úµãt´´½¨³É¹¦,µ±Ç°µ¥´ÊtokenÎªÊý×Öµ¥´ÊNUM						*
-		 * ½«µ±Ç°µ¥´ÊÃûtokenString×ª»»ÎªÕûÊý²¢¸³¸øÓï·¨Ê÷½ÚµãtµÄÊýÖµ³ÉÔ±attr.val	*/
+		/* æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tåˆ›å»ºæˆåŠŸ,å½“å‰å•è¯tokenä¸ºæ•°å­—å•è¯NUM						*
+		 * å°†å½“å‰å•è¯åtokenStringè½¬æ¢ä¸ºæ•´æ•°å¹¶èµ‹ç»™è¯­æ³•æ ‘èŠ‚ç‚¹tçš„æ•°å€¼æˆå‘˜attr.val	*/
 		if ((t != NULL) && (token.Word == INTC))
 		{
 			t->noline = linelinshi;
 			t->Figure.ExceptionFigure.value = atoi(token.Mean);
 		}
 
-		/* µ±Ç°µ¥´ÊtokenÓëÊý×Öµ¥´ÊNUMÆ¥Åä */
+		/* å½“å‰å•è¯tokenä¸Žæ•°å­—å•è¯NUMåŒ¹é… */
 		match(INTC);
 		break;
 
-		/* µ±Ç°µ¥´ÊtokenÎª±êÊ¶·ûµ¥´ÊID */
+		/* å½“å‰å•è¯tokenä¸ºæ ‡è¯†ç¬¦å•è¯ID */
 	case ID:
 
-		/* ´´½¨ÐÂµÄIdK±í´ïÊ½ÀàÐÍÓï·¨Ê÷½Úµãt */
+		/* åˆ›å»ºæ–°çš„IdKè¡¨è¾¾å¼ç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹t */
 		t = variable();
 		break;
 
-		/* µ±Ç°µ¥´ÊtokenÎª×óÀ¨ºÅµ¥´ÊLPAREN */
+		/* å½“å‰å•è¯tokenä¸ºå·¦æ‹¬å·å•è¯LPAREN */
 	case LPAREN:
 
-		/* µ±Ç°µ¥´ÊtokenÓë×óÀ¨ºÅµ¥´ÊLPARENÆ¥Åä */
+		/* å½“å‰å•è¯tokenä¸Žå·¦æ‹¬å·å•è¯LPARENåŒ¹é… */
 		match(LPAREN);
 
-		/* µ÷ÓÃ±í´ïÊ½´¦Àíº¯Êýexp(),º¯Êý·µ»ØÓï·¨Ê÷½ÚµãÖ¸Õë¸øt */
+		/* è°ƒç”¨è¡¨è¾¾å¼å¤„ç†å‡½æ•°exp(),å‡½æ•°è¿”å›žè¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆç»™t */
 		t = Exception();
 
-		/* µ±Ç°µ¥´ÊtokenÓëÓÒÀ¨ºÅµ¥´ÊRPARENÆ¥Åä */
+		/* å½“å‰å•è¯tokenä¸Žå³æ‹¬å·å•è¯RPARENåŒ¹é… */
 		match(RPAREN);
 
 		break;
 
-		/* µ±Ç°µ¥´ÊtokenÎªÆäËüµ¥´Ê */
+		/* å½“å‰å•è¯tokenä¸ºå…¶å®ƒå•è¯ */
 	default:
 		ReadNextToken(&token);
 		syntaxError("unexpected token is here!");
 		break;
 	}
-	/* º¯Êý·µ»Ø±í´ïÊ½ÀàÐÍÓï·¨Ê÷½Úµãt */
+	/* å‡½æ•°è¿”å›žè¡¨è¾¾å¼ç±»åž‹è¯­æ³•æ ‘èŠ‚ç‚¹t */
 	return t;
 }
 
 
-// ¹¦  ÄÜ ±äÁ¿´¦Àíº¯Êý												
-// ²úÉúÊ½ variable   ::=   id variMore                   			
-// Ëµ  Ã÷ ¸Ãº¯Êý¸ù¾Ý²úÉúÊ½,	´¦Àí±äÁ¿£¬Éú³ÉÆäÓï·¨Ê÷½Úµã              
+// åŠŸ  èƒ½ å˜é‡å¤„ç†å‡½æ•°												
+// äº§ç”Ÿå¼ variable   ::=   id variMore                   			
+// è¯´  æ˜Ž è¯¥å‡½æ•°æ ¹æ®äº§ç”Ÿå¼,	å¤„ç†å˜é‡ï¼Œç”Ÿæˆå…¶è¯­æ³•æ ‘èŠ‚ç‚¹              
 TreeNode * variable()
 {
 	TreeNode * t = newExpNode(VarType);
@@ -1691,9 +1691,9 @@ TreeNode * variable()
 	return t;
 }
 
-// ¹¦  ÄÜ º¯ÊýÉùÃ÷ÖÐ²ÎÊýÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý	        	        	
-// ²úÉúÊ½ < formList > ::=  id  fidMore                             
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ å‡½æ•°å£°æ˜Žä¸­å‚æ•°å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°	        	        	
+// äº§ç”Ÿå¼ < formList > ::=  id  fidMore                             
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 void FormList(TreeNode * t)
 {
 	if (token.Word == ID)
@@ -1705,9 +1705,9 @@ void FormList(TreeNode * t)
 	FidMore(t);
 }
 
-// ¹¦  ÄÜ º¯ÊýÉùÃ÷ÖÐ²ÎÊýÉùÃ÷²¿·ÖµÄ´¦Àíº¯Êý	        	        	
-// ²úÉúÊ½ < fidMore > ::=   ¦Å |  , formList                        
-// Ëµ  Ã÷ º¯Êý¸ù¾ÝÎÄ·¨²úÉúÊ½,µ÷ÓÃÏàÓ¦µÄµÝ¹é´¦Àíº¯Êý,Éú³ÉÓï·¨Ê÷½Úµã  
+// åŠŸ  èƒ½ å‡½æ•°å£°æ˜Žä¸­å‚æ•°å£°æ˜Žéƒ¨åˆ†çš„å¤„ç†å‡½æ•°	        	        	
+// äº§ç”Ÿå¼ < fidMore > ::=   Îµ |  , formList                        
+// è¯´  æ˜Ž å‡½æ•°æ ¹æ®æ–‡æ³•äº§ç”Ÿå¼,è°ƒç”¨ç›¸åº”çš„é€’å½’å¤„ç†å‡½æ•°,ç”Ÿæˆè¯­æ³•æ ‘èŠ‚ç‚¹  
 void FidMore(TreeNode * t)
 {
 	switch (token.Word)
@@ -1724,47 +1724,47 @@ void FidMore(TreeNode * t)
 		break;
 	}
 }
-// ¹¦  ÄÜ Óï·¨·ÖÎöº¯Êý												
-// Ëµ  Ã÷ ¸Ãº¯Êý°Ñ´Ê·¨·ÖÎö³ÌÐò×÷Îª×Ó³ÌÐòµ÷ÓÃ,²ÉÓÃµÝ¹éÏÂ½µ·¨			
-//		  ¸ù¾Ý²úÉúÊ½µ÷ÓÃµÝ¹é´¦Àíº¯Êý,º¯ÊýÎªÔ´³ÌÐò´´½¨Óï·¨·ÖÎöÊ÷		
+// åŠŸ  èƒ½ è¯­æ³•åˆ†æžå‡½æ•°												
+// è¯´  æ˜Ž è¯¥å‡½æ•°æŠŠè¯æ³•åˆ†æžç¨‹åºä½œä¸ºå­ç¨‹åºè°ƒç”¨,é‡‡ç”¨é€’å½’ä¸‹é™æ³•			
+//		  æ ¹æ®äº§ç”Ÿå¼è°ƒç”¨é€’å½’å¤„ç†å‡½æ•°,å‡½æ•°ä¸ºæºç¨‹åºåˆ›å»ºè¯­æ³•åˆ†æžæ ‘		
 TreeNode * parse()
 
 {
 	TreeNode * t = NULL;
 
-	/* ´ÓÎÄ¼þTokenlistÖÐÈ¡µÃµÚÒ»¸öµ¥´Ê,½«´Ê·¨ÐÅÏ¢ËÍ¸øtoken */
+	/* ä»Žæ–‡ä»¶Tokenlistä¸­å–å¾—ç¬¬ä¸€ä¸ªå•è¯,å°†è¯æ³•ä¿¡æ¯é€ç»™token */
 
 	ReadNextToken(&token);
 
-	/* ¿ªÊ¼µ÷ÓÃ»ù±¾Óï·¨·ÖÎö´¦Àíº¯Êý,µÝ¹éÏÂ½µ´¦Àí */
+	/* å¼€å§‹è°ƒç”¨åŸºæœ¬è¯­æ³•åˆ†æžå¤„ç†å‡½æ•°,é€’å½’ä¸‹é™å¤„ç† */
 	t = Program();
 
-	/* µ±Ç°µ¥´Êtoken²»ÊÇENDFILE,±¨´úÂëÔÚÎÄ¼þ½áÊøÇ°ÌáÇ°½áÊø´íÎó */
+	/* å½“å‰å•è¯tokenä¸æ˜¯ENDFILE,æŠ¥ä»£ç åœ¨æ–‡ä»¶ç»“æŸå‰æå‰ç»“æŸé”™è¯¯ */
 	if (token.Word != ENDFILE)
 		syntaxError("Code ends before file\n");
 
-	/* º¯Êý·µ»ØÓï·¨Ê÷¸ù½Úµãt */
+	/* å‡½æ•°è¿”å›žè¯­æ³•æ ‘æ ¹èŠ‚ç‚¹t */
 	return t;
 }
 static int indentno = 0;
-/* ¹¦  ÄÜ ¿Õ¸ñ´òÓ¡º¯Êý									*/
-/* Ëµ  Ã÷ ¸Ãº¯Êý´òÓ¡Ö¸¶¨ÊýÁ¿¿Õ¸ñ,ÓÃÓÚ±íÊ¾×ÓÊ÷Ëõ½ø		*/
+/* åŠŸ  èƒ½ ç©ºæ ¼æ‰“å°å‡½æ•°									*/
+/* è¯´  æ˜Ž è¯¥å‡½æ•°æ‰“å°æŒ‡å®šæ•°é‡ç©ºæ ¼,ç”¨äºŽè¡¨ç¤ºå­æ ‘ç¼©è¿›		*/
 /********************************************************/
 static void printSpaces(void)
 
 {
 	int i;
 
-	/* °´¸ø¶¨Ëõ½øÁ¿indentno´òÓ¡¿Õ¸ñ½øÐÐËõ½ø	*
-	 * ÆäÖÐËõ½øÁ¿indentno×ÜÄÜ±£³Ö·Ç¸º			*/
+	/* æŒ‰ç»™å®šç¼©è¿›é‡indentnoæ‰“å°ç©ºæ ¼è¿›è¡Œç¼©è¿›	*
+	 * å…¶ä¸­ç¼©è¿›é‡indentnoæ€»èƒ½ä¿æŒéžè´Ÿ			*/
 	for (i = 0; i < indentno; i++)
 		fprintf(listing, " ");
 
 }
 
 
-// ¹¦  ÄÜ ´òÓ¡¿Õ¸ñ                                         
-// Ëµ  Ã÷ ÔÚÊä³öÎÄ¼þÖÐ´òÓ¡¸öÊýÎª²ÎÊýtabnumµÄ¿Õ¸ñ           
+// åŠŸ  èƒ½ æ‰“å°ç©ºæ ¼                                         
+// è¯´  æ˜Ž åœ¨è¾“å‡ºæ–‡ä»¶ä¸­æ‰“å°ä¸ªæ•°ä¸ºå‚æ•°tabnumçš„ç©ºæ ¼           
 void printTab(int tabnum)
 {
 	for (int i = 0; i < tabnum; i++)
@@ -1772,27 +1772,27 @@ void printTab(int tabnum)
 }
 
 
-/*ÓÃÓÚ´æ´¢µ±Ç°×ÓÊ÷Ëõ½ø¸ñÊý, ³õÊ¼Îª0		*/
+/*ç”¨äºŽå­˜å‚¨å½“å‰å­æ ‘ç¼©è¿›æ ¼æ•°, åˆå§‹ä¸º0		*/
 
 
 
-/** ÔöÁ¿/¼õÁ¿Ëõ½øºê¶¨Òå **/
+/** å¢žé‡/å‡é‡ç¼©è¿›å®å®šä¹‰ **/
 #define INDENT indentno+=4
 #define UNINDENT indentno-=4
-//¹¦  ÄÜ °ÑÓï·¨Ê÷Êä³ö£¬ÏÔÊ¾ÔÚlistingÎÄ¼þÖÐ           
-// Ëµ  Ã÷ ¸Ãº¯ÊýÔËÓÃÁËºêÀ´¶¨ÒåÔöÁ¿¼õÁ¿µÄËõ½ø          
+//åŠŸ  èƒ½ æŠŠè¯­æ³•æ ‘è¾“å‡ºï¼Œæ˜¾ç¤ºåœ¨listingæ–‡ä»¶ä¸­           
+// è¯´  æ˜Ž è¯¥å‡½æ•°è¿ç”¨äº†å®æ¥å®šä¹‰å¢žé‡å‡é‡çš„ç¼©è¿›          
 void  printTree(TreeNode  *tree)
 {
 	int i;
 
-	/* ÔöÁ¿Ëõ½øºê,Ã¿´Î½øÈëÓï·¨Ê÷½Úµã¶¼½øÐÐÔöÁ¿Ëõ½ø */
+	/* å¢žé‡ç¼©è¿›å®,æ¯æ¬¡è¿›å…¥è¯­æ³•æ ‘èŠ‚ç‚¹éƒ½è¿›è¡Œå¢žé‡ç¼©è¿› */
 	INDENT;
 
-	/* º¯Êý²ÎÊý¸ø¶¨Óï·¨Ê÷½ÚµãÖ¸Õëtree·ÇNULL(¿Õ) */
+	/* å‡½æ•°å‚æ•°ç»™å®šè¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtreeéžNULL(ç©º) */
 	while (tree != NULL)
 	{
 		
-		/*´òÓ¡ÐÐºÅ*/
+		/*æ‰“å°è¡Œå·*/
 		if (tree->noline == 0)
 		{
 			printTab(9);
@@ -1821,7 +1821,7 @@ void  printTree(TreeNode  *tree)
 				printTab(1);
 			}
 
-		/* µ÷ÓÃº¯ÊýprintSpaces,´òÓ¡ÏàÓ¦µÄ¿Õ¸ñ,½øÐÐËõ½ø */
+		/* è°ƒç”¨å‡½æ•°printSpaces,æ‰“å°ç›¸åº”çš„ç©ºæ ¼,è¿›è¡Œç¼©è¿› */
 		printSpaces();
 
 		switch (tree->nodekind)
@@ -2016,17 +2016,17 @@ void  printTree(TreeNode  *tree)
 
 		fprintf(listing, "\n");
 
-		/* ¶ÔÓï·¨Ê÷½áµãtreeµÄ¸÷×Ó½áµãµÝ¹éµ÷ÓÃprintTree¹ý³Ì *
-		 * Ëõ½øÐ´ÈëÁÐ±íÎÄ¼þlisting						   */
+		/* å¯¹è¯­æ³•æ ‘ç»“ç‚¹treeçš„å„å­ç»“ç‚¹é€’å½’è°ƒç”¨printTreeè¿‡ç¨‹ *
+		 * ç¼©è¿›å†™å…¥åˆ—è¡¨æ–‡ä»¶listing						   */
 		for (i = 0; i < 3; i++)
 			printTree(tree->treechild[i]);
 
-		/* ¶ÔÓï·¨Ê÷½áµãtreeµÄÐÖµÜ½ÚµãµÝ¹éµ÷ÓÃprintTree¹ý³Ì *
-		 * Ëõ½øÐ´ÈëÁÐ±íÎÄ¼þlisting						   */
+		/* å¯¹è¯­æ³•æ ‘ç»“ç‚¹treeçš„å…„å¼ŸèŠ‚ç‚¹é€’å½’è°ƒç”¨printTreeè¿‡ç¨‹ *
+		 * ç¼©è¿›å†™å…¥åˆ—è¡¨æ–‡ä»¶listing						   */
 		tree = tree->brother;
 	}
 
-	/* ¼õÁ¿Ëõ½øºê,Ã¿´ÎÍË³öÓï·¨Ê÷½ÚµãÊ±¼õÁ¿Ëõ½ø */
+	/* å‡é‡ç¼©è¿›å®,æ¯æ¬¡é€€å‡ºè¯­æ³•æ ‘èŠ‚ç‚¹æ—¶å‡é‡ç¼©è¿› */
 	UNINDENT;
 }
 void Free_Tree(TreeNode*root)
@@ -2051,18 +2051,18 @@ void Free_Tree(TreeNode*root)
 	}
 }
 
-/* Óï·¨·ÖÎö×·×Ù±êÖ¾,³õÊ¼ÎªFALSE.Èç¹ûÎªTRUE,		*
- * ½«Óï·¨·ÖÎöÐÅÏ¢Êä³öµ½ÖÐ¼äÎÄ¼þlisting			*/
+/* è¯­æ³•åˆ†æžè¿½è¸ªæ ‡å¿—,åˆå§‹ä¸ºFALSE.å¦‚æžœä¸ºTRUE,		*
+ * å°†è¯­æ³•åˆ†æžä¿¡æ¯è¾“å‡ºåˆ°ä¸­é—´æ–‡ä»¶listing			*/
 int TraceParse = TRUE;
 
 
 /*******************************************************/
-//            ÓïÒå·ÖÎö
+//            è¯­ä¹‰åˆ†æž
 /*******************************************************/
 
-//´´½¨µ±Ç°¿Õ·ûºÅ±í
+//åˆ›å»ºå½“å‰ç©ºç¬¦å·è¡¨
 /*
-  Óöµ½ÐÂµÄÎÞÉùÃ÷µÄ±êÊ¶·ûÊ±´´½¨ÐÂµÄ¿Õ·ûºÅ±í£¬²¢·µ»ØËüµÄÖ¸Õë
+  é‡åˆ°æ–°çš„æ— å£°æ˜Žçš„æ ‡è¯†ç¬¦æ—¶åˆ›å»ºæ–°çš„ç©ºç¬¦å·è¡¨ï¼Œå¹¶è¿”å›žå®ƒçš„æŒ‡é’ˆ
 */
 SymbTable*NewTable()
 {
@@ -2075,31 +2075,31 @@ SymbTable*NewTable()
 	return table;
 }
 
-//´´½¨Ò»¸ö·ûºÅ±í
+//åˆ›å»ºä¸€ä¸ªç¬¦å·è¡¨
 /*
- µ±½øÈëÒ»¸öÐÂµÄ¾Ö²¿»¯µ¥Î»Ê±£¬µ÷ÓÃ±¾×Ó³ÌÐò¡£¹¦ÄÜÊÇ½¨Á¢Ò»¸ö¿Õ·ûºÅ±í
- ·ûºÅ¼ÓÒ»£¬Æ«ÒÆ³õÊ¼»¯Îª0
+ å½“è¿›å…¥ä¸€ä¸ªæ–°çš„å±€éƒ¨åŒ–å•ä½æ—¶ï¼Œè°ƒç”¨æœ¬å­ç¨‹åºã€‚åŠŸèƒ½æ˜¯å»ºç«‹ä¸€ä¸ªç©ºç¬¦å·è¡¨
+ ç¬¦å·åŠ ä¸€ï¼Œåç§»åˆå§‹åŒ–ä¸º0
 */
 void CreatTable()
 {
-	Level++;//²ãÊý¼ÓÒ»
-	scope[Level] = NULL;//ÉêÇëÁËÐÂµÄÒ»²ãscopeÕ»µÄ¿Õ¼ä
-	Off = 7;//Æ«ÒÆ³õÊ¼»¯ÓÉÓÚÄ¿±ê´úÂëÉú³É½×¶Î£¬Ê×ÏÈÒª±£´æ£º¶¯Ì¬Á´Ö¸Õë£¬·µ»ØµØÖ·£¬¹ý³Ì²ãÊý£¬Èý¸öÀÛ¼Ó¼Ä´æÆ÷£¬sp µ½display ±íµÄÆ«ÒÆÁ¿µÈ 7 ¸öÐÅÏ¢£¬¹ÊÕâÀï initOff ¶¨Îª³£Êý 7¡£
+	Level++;//å±‚æ•°åŠ ä¸€
+	scope[Level] = NULL;//ç”³è¯·äº†æ–°çš„ä¸€å±‚scopeæ ˆçš„ç©ºé—´
+	Off = 7;//åç§»åˆå§‹åŒ–ç”±äºŽç›®æ ‡ä»£ç ç”Ÿæˆé˜¶æ®µï¼Œé¦–å…ˆè¦ä¿å­˜ï¼šåŠ¨æ€é“¾æŒ‡é’ˆï¼Œè¿”å›žåœ°å€ï¼Œè¿‡ç¨‹å±‚æ•°ï¼Œä¸‰ä¸ªç´¯åŠ å¯„å­˜å™¨ï¼Œsp åˆ°display è¡¨çš„åç§»é‡ç­‰ 7 ä¸ªä¿¡æ¯ï¼Œæ•…è¿™é‡Œ initOff å®šä¸ºå¸¸æ•° 7ã€‚
 }
-//³·ÏúÒ»¸ö·ûºÅ±í
+//æ’¤é”€ä¸€ä¸ªç¬¦å·è¡¨
 void DestroyTable()
 {
 	Level--;
 }
-//µÇ¼Ç±êÊ¶·ûºÍÊôÐÔµ½·ûºÅ±í
+//ç™»è®°æ ‡è¯†ç¬¦å’Œå±žæ€§åˆ°ç¬¦å·è¡¨
 /*
-½«±êÊ¶·ûÃû£¬±êÊ¶·ûÊôÐÔµÇ¼ÇÔÚ·ûºÅ±íÖÐ£¬µÇ¼Ç³É¹¦£¬·µ»ØÖµÎª
-Õæ£¬Entry Ö¸ÏòµÇ¼ÇµÄ±êÊ¶·ûÔÚ·ûºÅ±íÖÐµÄÎ»ÖÃ£»µÇ¼Ç²»³É¹¦£¬·µ»Ø
-ÖµÎª¼Ù£¬Entry ÖµÎª¿Õ¡£
-ÊäÈëÎªÒ»¸ö±êÊ¶·ûidºÍÒ»¸öÊôÐÔfigureºÍ·ûºÅ±íÖ¸Õëentry£¬½«¸ø¶¨
-µÄidºÍÊôÐÔµÇ¼Çµ½·ûºÅ±íÖÐ£¬²¢·µ»ØµÇ¼ÇÏîµÄµØÖ·¡£
-ÔÚµÇ¼ÇÊ±Ó¦¼ì²éÔÚ±¾²ãÖÐÊÇ·ñÓÐÖØ¸´ÉùÃ÷´íÎó£¬Îª´ËÉùÃ÷Enter·µ»ØÀàÐÍ
-Îªbool£¬Èç¹ûÒÑÓÐidÏîÔò¸Ã±äÁ¿·µ»ØÕæ£¬·ñÔò·µ»Ø¼Ù
+å°†æ ‡è¯†ç¬¦åï¼Œæ ‡è¯†ç¬¦å±žæ€§ç™»è®°åœ¨ç¬¦å·è¡¨ä¸­ï¼Œç™»è®°æˆåŠŸï¼Œè¿”å›žå€¼ä¸º
+çœŸï¼ŒEntry æŒ‡å‘ç™»è®°çš„æ ‡è¯†ç¬¦åœ¨ç¬¦å·è¡¨ä¸­çš„ä½ç½®ï¼›ç™»è®°ä¸æˆåŠŸï¼Œè¿”å›ž
+å€¼ä¸ºå‡ï¼ŒEntry å€¼ä¸ºç©ºã€‚
+è¾“å…¥ä¸ºä¸€ä¸ªæ ‡è¯†ç¬¦idå’Œä¸€ä¸ªå±žæ€§figureå’Œç¬¦å·è¡¨æŒ‡é’ˆentryï¼Œå°†ç»™å®š
+çš„idå’Œå±žæ€§ç™»è®°åˆ°ç¬¦å·è¡¨ä¸­ï¼Œå¹¶è¿”å›žç™»è®°é¡¹çš„åœ°å€ã€‚
+åœ¨ç™»è®°æ—¶åº”æ£€æŸ¥åœ¨æœ¬å±‚ä¸­æ˜¯å¦æœ‰é‡å¤å£°æ˜Žé”™è¯¯ï¼Œä¸ºæ­¤å£°æ˜ŽEnterè¿”å›žç±»åž‹
+ä¸ºboolï¼Œå¦‚æžœå·²æœ‰idé¡¹åˆ™è¯¥å˜é‡è¿”å›žçœŸï¼Œå¦åˆ™è¿”å›žå‡
 */
 bool Enter(char *id, IDfigure *figure, SymbTable**entry)
 {
@@ -2120,7 +2120,7 @@ bool Enter(char *id, IDfigure *figure, SymbTable**entry)
 			result = strcmp(id, current->idName);
 			if (result == 0)
 			{
-				fprintf(listing, "ÖØ¸´¶¨Òå´íÎó!");
+				fprintf(listing, "é‡å¤å®šä¹‰é”™è¯¯!");
 				Error = TRUE;
 				Present = true;
 			}
@@ -2134,13 +2134,13 @@ bool Enter(char *id, IDfigure *figure, SymbTable**entry)
 		}
 
 	}
-	//½«±êÊ¶·ûÃûºÍÊôÐÔµÇ¼Çµ½±íÖÐ
+	//å°†æ ‡è¯†ç¬¦åå’Œå±žæ€§ç™»è®°åˆ°è¡¨ä¸­
 	strcpy(current->idName, id);
 	current->idfinger.idtype = figure->idtype;
 	current->idfinger.kind = figure->kind;
 	switch (figure->kind)
 	{
-	case typeKind:break;//ÀàÐÍ±êÊ¶·û
+	case typeKind:break;//ç±»åž‹æ ‡è¯†ç¬¦
 	case varKind:
 		current->idfinger.Random.VarFigure.level = figure->Random.VarFigure.level;
 		current->idfinger.Random.VarFigure.off = figure->Random.VarFigure.off;
@@ -2157,18 +2157,18 @@ bool Enter(char *id, IDfigure *figure, SymbTable**entry)
 
 }
 
-//Ñ°ÕÒ±íÏîµØÖ·£¨·ûºÅ±íÖÐ²éÕÒ±êÊ¶·û£©
+//å¯»æ‰¾è¡¨é¡¹åœ°å€ï¼ˆç¬¦å·è¡¨ä¸­æŸ¥æ‰¾æ ‡è¯†ç¬¦ï¼‰
 /*
-   ¶Ô¸ø¶¨µÄ±êÊ¶·ûid (idÎª×Ö·û´®ÀàÐÍ) Çó³öÆä±íÏîµØÖ·,
-   ²¢ÔÚentryµÄÊµ²Îµ¥ÔªÖÐ·µ»Ø±íÏîµØÖ·¡£Èç¹û·ûºÅ±íÀïÃ»
-   ÓÐËùÕÒµÄidÏî,Ôò·µ»ØpresentÎª0,Ôòº¯ÊýÖÐµÄ²ÎÊýentry
-   ¸³ÖµÎªÖ¸Ïò¸Ã±íÏîµØÖ·µÄÖ¸Õë;·ñÔò,present¸³ÖµÎª1¡£
+   å¯¹ç»™å®šçš„æ ‡è¯†ç¬¦id (idä¸ºå­—ç¬¦ä¸²ç±»åž‹) æ±‚å‡ºå…¶è¡¨é¡¹åœ°å€,
+   å¹¶åœ¨entryçš„å®žå‚å•å…ƒä¸­è¿”å›žè¡¨é¡¹åœ°å€ã€‚å¦‚æžœç¬¦å·è¡¨é‡Œæ²¡
+   æœ‰æ‰€æ‰¾çš„idé¡¹,åˆ™è¿”å›žpresentä¸º0,åˆ™å‡½æ•°ä¸­çš„å‚æ•°entry
+   èµ‹å€¼ä¸ºæŒ‡å‘è¯¥è¡¨é¡¹åœ°å€çš„æŒ‡é’ˆ;å¦åˆ™,presentèµ‹å€¼ä¸º1ã€‚
 */
 int FindEntry(char *id, SymbTable**entry)
 {
-	int present = 0;//·µ»ØÖµ
-	int result = 1;//±êÊ¶·ûÃû×Ö±È½Ï½á¹û
-	int level = Level;//ÁÙÊ±¼ÇÂ¼²ãÊý
+	int present = 0;//è¿”å›žå€¼
+	int result = 1;//æ ‡è¯†ç¬¦åå­—æ¯”è¾ƒç»“æžœ
+	int level = Level;//ä¸´æ—¶è®°å½•å±‚æ•°
 	SymbTable*findentry = scope[level];
 	while ((level != -1) && (present != 1))
 	{
@@ -2176,14 +2176,14 @@ int FindEntry(char *id, SymbTable**entry)
 		{
 			result = strcmp(id, findentry->idName);
 			if (result == 0)
-				present = 1;//±êÊ¶·ûÃû×ÖÏàÍ¬
+				present = 1;//æ ‡è¯†ç¬¦åå­—ç›¸åŒ
 			else
-				findentry = findentry->next;//ÈôÃ»ÕÒµ½Ôò¼ÌÐøÁ´±íÖÐ¹ú²éÕÒ
+				findentry = findentry->next;//è‹¥æ²¡æ‰¾åˆ°åˆ™ç»§ç»­é“¾è¡¨ä¸­å›½æŸ¥æ‰¾
 		}
 		if (present != 1)
 		{
 			level--;
-			findentry = scope[level];//ÉÏÒ»¸ö¾Ö²¿»¯Çø¼ÌÐøÕÒ
+			findentry = scope[level];//ä¸Šä¸€ä¸ªå±€éƒ¨åŒ–åŒºç»§ç»­æ‰¾
 		}
 	}
 	if (present != 1)
@@ -2197,15 +2197,15 @@ int FindEntry(char *id, SymbTable**entry)
 	return present;
 }
 
-/* ¹¦  ÄÜ  ²éÕÒ¼ÍÂ¼µÄÓòÃû								*/
-/* Ëµ  Ã÷  ·µ»ØÖµÎªÊÇ·ñÕÒµ½±êÖ¾£¬±äÁ¿Entry·µ»Ø´ËÓòÃûÔÚ  */
-/*		   ¼ÍÂ¼µÄÓò±íÖÐµÄÎ»ÖÃ.							*/
+/* åŠŸ  èƒ½  æŸ¥æ‰¾çºªå½•çš„åŸŸå								*/
+/* è¯´  æ˜Ž  è¿”å›žå€¼ä¸ºæ˜¯å¦æ‰¾åˆ°æ ‡å¿—ï¼Œå˜é‡Entryè¿”å›žæ­¤åŸŸååœ¨  */
+/*		   çºªå½•çš„åŸŸè¡¨ä¸­çš„ä½ç½®.							*/
 
 bool FindField(char*id, fieldChain*head, fieldChain**Entry)
 {
 	bool present = false;
-	fieldChain*currentf = head;//¼ÇÂ¼µ±Ç°½Úµã
-	while ((currentf != NULL) && (present == false))//´Ó±íÍ·¿ªÊ¼²éÕÒÕâ¸ö±êÊ¶·û£¬Ö±µ½ÕÒµ½»òµ½´ï±íÎ»
+	fieldChain*currentf = head;//è®°å½•å½“å‰èŠ‚ç‚¹
+	while ((currentf != NULL) && (present == false))//ä»Žè¡¨å¤´å¼€å§‹æŸ¥æ‰¾è¿™ä¸ªæ ‡è¯†ç¬¦ï¼Œç›´åˆ°æ‰¾åˆ°æˆ–åˆ°è¾¾è¡¨ä½
 	{
 		if (strcmp(currentf->id, id) == 0)
 		{
@@ -2218,8 +2218,8 @@ bool FindField(char*id, fieldChain*head, fieldChain**Entry)
 	}
 	return present;
 }
-//ÊôÐÔ²éÑ¯
-//¶Ô¸øÐÐ±íÏîµØÖ·£¬Çó³öÆäÊôÐÔÖµ£¬²¢½«Æä·µ»Ø¸øfingureµÄÊµ²Îµ¥ÔªÖÐ
+//å±žæ€§æŸ¥è¯¢
+//å¯¹ç»™è¡Œè¡¨é¡¹åœ°å€ï¼Œæ±‚å‡ºå…¶å±žæ€§å€¼ï¼Œå¹¶å°†å…¶è¿”å›žç»™fingureçš„å®žå‚å•å…ƒä¸­
 IDfigure Findfinger(SymbTable*entry)
 {
 	IDfigure finger = entry->idfinger;
@@ -2228,24 +2228,24 @@ IDfigure Findfinger(SymbTable*entry)
 
 
 
-//ÅÐ¶ÏÀàÐÍÊÇ·ñÏàÈÝ
+//åˆ¤æ–­ç±»åž‹æ˜¯å¦ç›¸å®¹
 /*
- ÓÉÓÚTINYÓïÑÔÖÐÖ»ÓÐÕûÊýÀàÐÍ£¬×Ö·ûÀàÐÍ£¬Êý×éÀàÐÍºÍ¼ÇÂ¼ÀàÐÍ£¬¹Ê
- ÀàÐÍÏàÈÝµÈÓÚÀàÐÍµÈ¼Û£¬Ö»ÐèÅÐ¶ÏÃ¿¸ö½á¹¹ÀàÐÍµÄÄÚ²¿±íÊ¾²úÉúµÄÖÁÕæÖÁÊÇ·ñÏàÍ¬¼´¿É
+ ç”±äºŽTINYè¯­è¨€ä¸­åªæœ‰æ•´æ•°ç±»åž‹ï¼Œå­—ç¬¦ç±»åž‹ï¼Œæ•°ç»„ç±»åž‹å’Œè®°å½•ç±»åž‹ï¼Œæ•…
+ ç±»åž‹ç›¸å®¹ç­‰äºŽç±»åž‹ç­‰ä»·ï¼Œåªéœ€åˆ¤æ–­æ¯ä¸ªç»“æž„ç±»åž‹çš„å†…éƒ¨è¡¨ç¤ºäº§ç”Ÿçš„è‡³çœŸè‡³æ˜¯å¦ç›¸åŒå³å¯
 */
 int Compare(TypeIR*tp1, TypeIR*tp2)
 {
 	int present;
 	if (tp1 != tp2)
-		present = 0;//ÀàÐÍ²»µÈ
+		present = 0;//ç±»åž‹ä¸ç­‰
 	else
-		present = 1;//ÀàÐÍµÈ¼Û
+		present = 1;//ç±»åž‹ç­‰ä»·
 	return present;
 }
 
 
 
-//´´½¨µ±Ç°¿ÕÀàÐÍÄÚ²¿±íÊ¾
+//åˆ›å»ºå½“å‰ç©ºç±»åž‹å†…éƒ¨è¡¨ç¤º
 TypeIR*NewTy(TypeKind kind)
 {
 	TypeIR*table = (TypeIR*)malloc(sizeof(TypeIR));
@@ -2274,8 +2274,8 @@ TypeIR*NewTy(TypeKind kind)
 
 
 
-//´´½¨µ±Ç°¿ÕÐÎ²ÎÁ´±í
-//º¯Êý·µ»ØÐÂÉêÇëµÄµ¥ÔªµØÖ·
+//åˆ›å»ºå½“å‰ç©ºå½¢å‚é“¾è¡¨
+//å‡½æ•°è¿”å›žæ–°ç”³è¯·çš„å•å…ƒåœ°å€
 ParamTable*NewParam()
 {
 	ParamTable *p = (ParamTable*)malloc(sizeof(ParamTable));
@@ -2287,75 +2287,75 @@ ParamTable*NewParam()
 
 
 
-//º¯Êý³õÊ¼»¯ÕûÊýÀàÐÍ£¬×Ö·ûÀàÐÍ£¬²¼¶ûÀàÐÍµÄÄÚ²¿±íÊ¾
+//å‡½æ•°åˆå§‹åŒ–æ•´æ•°ç±»åž‹ï¼Œå­—ç¬¦ç±»åž‹ï¼Œå¸ƒå°”ç±»åž‹çš„å†…éƒ¨è¡¨ç¤º
 void initialize()
 {
 	intPtr = NewTy(intTy);
 	charPtr = NewTy(charTy);
 	boolPtr = NewTy(boolTy);
-	//scopeÕ»µÄ¸÷²ãÖ¸ÕëÉèÎª¿Õ
+	//scopeæ ˆçš„å„å±‚æŒ‡é’ˆè®¾ä¸ºç©º
 	for (int i = 0; i < 1000; i++)
 		scope[i] = NULL;
 }
-//´íÎóÌáÊ¾
-//ÔÚÊä³öÎÄ¼þÖÐÏÔÊ¾´íÎóÌáÊ¾£¬²¢¸øÈ«¾ÖÁ¿Error¸³ÖµÎª1
+//é”™è¯¯æç¤º
+//åœ¨è¾“å‡ºæ–‡ä»¶ä¸­æ˜¾ç¤ºé”™è¯¯æç¤ºï¼Œå¹¶ç»™å…¨å±€é‡Errorèµ‹å€¼ä¸º1
 void ErrorPrompt(int line, char*name, const char*message)
 {
-	fprintf(listing, "Line:%d£º %s ", line, name);
+	fprintf(listing, "Line:%dï¼š %s ", line, name);
 	fprintf(listing, "%s", message);
 	Error = 1;
 	exit(0);
 }
 
-/* ÔÚ·ûºÅ±íÖÐÑ°ÕÒÒÑ¶¨ÒåµÄÀàÐÍÃû×Ö         */
-/* µ÷ÓÃÑ°ÕÒ±íÏîµØÖ·º¯ÊýFindEntry£¬·µ»ØÕÒµ½µÄ±íÏîµØÖ·
-Ö¸Õëentry¡£Èç¹ûpresentÎªFALSE£¬Ôò·¢ÉúÎÞÉùÃ÷´íÎó¡£
-Èç¹û·ûºÅ±íÖÐµÄ¸Ã±êÊ¶·ûµÄÊôÐÔÐÅÏ¢²»ÊÇÀàÐÍ£¬Ôò·ÇÀà
-ÐÍ±êÊ¶·û¡£¸Ãº¯Êý·µ»ØÖ¸ÕëÖ¸Ïò·ûºÅ±íÖÐµÄ¸Ã±êÊ¶·ûµÄ
-ÀàÐÍÄÚ²¿±íÊ¾¡£								    */
+/* åœ¨ç¬¦å·è¡¨ä¸­å¯»æ‰¾å·²å®šä¹‰çš„ç±»åž‹åå­—         */
+/* è°ƒç”¨å¯»æ‰¾è¡¨é¡¹åœ°å€å‡½æ•°FindEntryï¼Œè¿”å›žæ‰¾åˆ°çš„è¡¨é¡¹åœ°å€
+æŒ‡é’ˆentryã€‚å¦‚æžœpresentä¸ºFALSEï¼Œåˆ™å‘ç”Ÿæ— å£°æ˜Žé”™è¯¯ã€‚
+å¦‚æžœç¬¦å·è¡¨ä¸­çš„è¯¥æ ‡è¯†ç¬¦çš„å±žæ€§ä¿¡æ¯ä¸æ˜¯ç±»åž‹ï¼Œåˆ™éžç±»
+åž‹æ ‡è¯†ç¬¦ã€‚è¯¥å‡½æ•°è¿”å›žæŒ‡é’ˆæŒ‡å‘ç¬¦å·è¡¨ä¸­çš„è¯¥æ ‡è¯†ç¬¦çš„
+ç±»åž‹å†…éƒ¨è¡¨ç¤ºã€‚								    */
 TypeIR*nameType(TreeNode*t)
 {
 	TypeIR*Ptr = NULL;
 	SymbTable*entry = NULL;
 	int present;
-	//ÀàÐÍ±íÊ¾·ûÒ²ÐèÒªÍùÉÏ²ã²éÕÒ
+	//ç±»åž‹è¡¨ç¤ºç¬¦ä¹Ÿéœ€è¦å¾€ä¸Šå±‚æŸ¥æ‰¾
 	present = FindEntry(t->Figure.typeName, &entry);
 	if (present == 1)
 	{
-		//¼ì²é¸Ã±êÊ¶·ûÊÇ·ñÎªÀàÐÍ±êÊ¶·û
+		//æ£€æŸ¥è¯¥æ ‡è¯†ç¬¦æ˜¯å¦ä¸ºç±»åž‹æ ‡è¯†ç¬¦
 		if (entry->idfinger.kind != typeKind)
-			ErrorPrompt(t->noline, t->Figure.typeName, "²»ÊÇÀàÐÍ±êÊ¶·û\n");
+			ErrorPrompt(t->noline, t->Figure.typeName, "ä¸æ˜¯ç±»åž‹æ ‡è¯†ç¬¦\n");
 		else
 			Ptr = entry->idfinger.idtype;
 	}
-	else//Î´ÕÒµ½¸Ã±êÊ¶·û
+	else//æœªæ‰¾åˆ°è¯¥æ ‡è¯†ç¬¦
 	{
-		ErrorPrompt(t->noline, t->Figure.typeName, "Ã»ÓÐÉùÃ÷£¡£¡£¡\n");
+		ErrorPrompt(t->noline, t->Figure.typeName, "æ²¡æœ‰å£°æ˜Žï¼ï¼ï¼\n");
 	}
 	return Ptr;
 }
-//´¦ÀíÊý×éÀàÐÍÄÚ²¿±íÊ¾
-//ÀàÐÍÎªÊý×éÀàÐÍÊ±ÐèÒª¼ì²éÏÂ±êÊÇ·ñºÏ·¨
+//å¤„ç†æ•°ç»„ç±»åž‹å†…éƒ¨è¡¨ç¤º
+//ç±»åž‹ä¸ºæ•°ç»„ç±»åž‹æ—¶éœ€è¦æ£€æŸ¥ä¸‹æ ‡æ˜¯å¦åˆæ³•
 TypeIR*arrayType(TreeNode*t)
 {
 	TypeIR *Ptr0 = NULL;
 	TypeIR*Ptr1 = NULL;
 	TypeIR*Ptr = NULL;
-	//¼ì²éÊý×éÉÏÏÂ½çµÄºÏ·¨ÐÔ
+	//æ£€æŸ¥æ•°ç»„ä¸Šä¸‹ç•Œçš„åˆæ³•æ€§
 	char*NAME = new char[2];
 	NAME[0] = ' ';
 	NAME[1] = '\0';
 	if ((t->Figure.ArrayFigure.low) > (t->Figure.ArrayFigure.up))
 	{
-		ErrorPrompt(t->noline, NAME, "Êý×éÉÏÏÂ½ç²»ºÏ·¨£¡\n");
+		ErrorPrompt(t->noline, NAME, "æ•°ç»„ä¸Šä¸‹ç•Œä¸åˆæ³•ï¼\n");
 		Error = 1;
 	}
 	else
 	{
-		Ptr0 = TypeProcess(t, Integer);//µ÷ÓÃÀàÐÍ·ÖÎöº¯Êý´¦ÀíÏÂ±êÀàÐÍ
-		Ptr1 = TypeProcess(t, t->Figure.ArrayFigure.childtype);//µ÷ÓÃÀàÐÍ·ÖÎöº¯Êý´¦ÀíÔªËØÀàÐÍ
-		Ptr = NewTy(arrayTy);//Ö¸ÏòÒ»ÐÂ´´½¨µÄÀàÐÍÐÅÏ¢±í
-		Ptr->size = ((t->Figure.ArrayFigure.up) - (t->Figure.ArrayFigure.low) + 1)*Ptr1->size;//¼ÇÂ¼±¾ÀàÐÍ³¤¶È
+		Ptr0 = TypeProcess(t, Integer);//è°ƒç”¨ç±»åž‹åˆ†æžå‡½æ•°å¤„ç†ä¸‹æ ‡ç±»åž‹
+		Ptr1 = TypeProcess(t, t->Figure.ArrayFigure.childtype);//è°ƒç”¨ç±»åž‹åˆ†æžå‡½æ•°å¤„ç†å…ƒç´ ç±»åž‹
+		Ptr = NewTy(arrayTy);//æŒ‡å‘ä¸€æ–°åˆ›å»ºçš„ç±»åž‹ä¿¡æ¯è¡¨
+		Ptr->size = ((t->Figure.ArrayFigure.up) - (t->Figure.ArrayFigure.low) + 1)*Ptr1->size;//è®°å½•æœ¬ç±»åž‹é•¿åº¦
 		Ptr->More.ArrayFigure.indexTy = Ptr0;
 		Ptr->More.ArrayFigure.elemTy = Ptr1;
 		Ptr->More.ArrayFigure.low = t->Figure.ArrayFigure.low;
@@ -2365,8 +2365,8 @@ TypeIR*arrayType(TreeNode*t)
 	return Ptr;
 }
 
-//´¦Àí±í´ïÊ½·ÖÎö£¬ÖØµã¼ì²éÔËËã·ÖÁ¿µÄÀàÐÍÏàÈÝÐÔ£¬Çó±í´ïÊ½µÄÀàÐÍ£¬ÆäÖÐ
-//²ÎÊýkindÓÃÀ´±íÊ¾Êµ²ÎÊÇ±ä²Î»¹ÊÇÖµ²Î
+//å¤„ç†è¡¨è¾¾å¼åˆ†æžï¼Œé‡ç‚¹æ£€æŸ¥è¿ç®—åˆ†é‡çš„ç±»åž‹ç›¸å®¹æ€§ï¼Œæ±‚è¡¨è¾¾å¼çš„ç±»åž‹ï¼Œå…¶ä¸­
+//å‚æ•°kindç”¨æ¥è¡¨ç¤ºå®žå‚æ˜¯å˜å‚è¿˜æ˜¯å€¼å‚
 TypeIR*Expr(TreeNode*t, AccessKind*kind)
 {
 	bool present = false;
@@ -2382,41 +2382,41 @@ TypeIR*Expr(TreeNode*t, AccessKind*kind)
 			Eptr = TypeProcess(t, Integer);
 			Eptr->kind = intTy;
 			if (kind != NULL)
-				(*kind) = dir;//Ö±½Ó±äÁ¿
+				(*kind) = dir;//ç›´æŽ¥å˜é‡
 			break;
 		case VarType:
-			//var=idµÄÇéÐÎ
+			//var=idçš„æƒ…å½¢
 			if (t->treechild[0] == NULL)
-			{	//ÔÚ·ûºÅ±íÖÐ²éÕÒ´Ë±êÊ¶·û
+			{	//åœ¨ç¬¦å·è¡¨ä¸­æŸ¥æ‰¾æ­¤æ ‡è¯†ç¬¦
 				present = FindEntry(t->name[0], &entry);
 				t->table[0] = entry;
 				if (present != 0)
 				{
-					//id²»ÊÇ±äÁ¿
+					//idä¸æ˜¯å˜é‡
 					if (Findfinger(entry).kind != varKind)
 					{
-						ErrorPrompt(t->noline, t->name[0], "²»ÊÇ±äÁ¿´íÎó£¡£¡£¡\n");
+						ErrorPrompt(t->noline, t->name[0], "ä¸æ˜¯å˜é‡é”™è¯¯ï¼ï¼ï¼\n");
 						Eptr = NULL;
 					}
 					else
 					{
 						Eptr = entry->idfinger.idtype;
 						if (kind != NULL)
-							(*kind) = indir;//¼ä½Ó±äÁ¿
+							(*kind) = indir;//é—´æŽ¥å˜é‡
 					}
 
 				}
-				else//±êÊ¶·ûÎ´ÉùÃ÷
+				else//æ ‡è¯†ç¬¦æœªå£°æ˜Ž
 				{
-					ErrorPrompt(t->noline, t->name[0], "Ã»ÓÐÉùÃ÷£¡£¡£¡\n");
+					ErrorPrompt(t->noline, t->name[0], "æ²¡æœ‰å£°æ˜Žï¼ï¼ï¼\n");
 
 				}
 			}
-			else//Var=Var0[E]µÄÇéÐÎ
+			else//Var=Var0[E]çš„æƒ…å½¢
 			{
 				if (t->Figure.ExceptionFigure.varkind == ArrayMember)
 					Eptr = arrayVar(t);
-				else//var=var0.idµÄÇéÐÎ
+				else//var=var0.idçš„æƒ…å½¢
 				{
 					if (t->Figure.ExceptionFigure.varkind == FieldMember)
 						Eptr = recordVar(t);
@@ -2424,14 +2424,14 @@ TypeIR*Expr(TreeNode*t, AccessKind*kind)
 			}
 			break;
 		case Op:
-			//µÝ¹éµ÷ÓÃ¶ù×Ó½Úµã
+			//é€’å½’è°ƒç”¨å„¿å­èŠ‚ç‚¹
 			Eptr0 = Expr(t->treechild[0], NULL);
 			if (Eptr0 == NULL)
 				return NULL;
 			Eptr1 = Expr(t->treechild[1], NULL);
 			if (Eptr1 == NULL)
 				return NULL;
-			//ÀàÐÍÅÐ±ð
+			//ç±»åž‹åˆ¤åˆ«
 			present = Compare(Eptr0, Eptr1);
 			if (present != 0)
 			{
@@ -2440,18 +2440,18 @@ TypeIR*Expr(TreeNode*t, AccessKind*kind)
 				case LT:
 				case EQ:
 					Eptr = boolPtr;
-					break;//Ìõ¼þ±í´ïÊ½
+					break;//æ¡ä»¶è¡¨è¾¾å¼
 				case PLUS:
 				case MINUS:
 				case TIMES:
 				case OVER:
 					Eptr = intPtr;
-					break;//ËãÊý±í´ïÊ½
+					break;//ç®—æ•°è¡¨è¾¾å¼
 
 				}
 				if (kind != NULL)
 				{
-					(*kind) = dir;//Ö±½Ó±äÁ¿
+					(*kind) = dir;//ç›´æŽ¥å˜é‡
 				}
 			}
 			else
@@ -2459,7 +2459,7 @@ TypeIR*Expr(TreeNode*t, AccessKind*kind)
 				char NAME[2];
 				NAME[0] = ' ';
 				NAME[1] = '\0';
-				ErrorPrompt(t->noline, NAME, "ÔËËã·û²»Æ¥Åä");
+				ErrorPrompt(t->noline, NAME, "è¿ç®—ç¬¦ä¸åŒ¹é…");
 			}
 			break;
 
@@ -2470,8 +2470,8 @@ TypeIR*Expr(TreeNode*t, AccessKind*kind)
 
 
 
-//´¦ÀíÊý×é±äÁ¿µÄÏÂ±ê·ÖÎö
-//¼ì²évar:=var0[E]ÖÐvar0ÊÇ²»ÊÇÊý×éÀàÐÍ£¬EÊÇ²»ÊÇºÍÊý×éµÄÏÂ±ê±äÁ¿ÀàÐÍÆ¥Åä
+//å¤„ç†æ•°ç»„å˜é‡çš„ä¸‹æ ‡åˆ†æž
+//æ£€æŸ¥var:=var0[E]ä¸­var0æ˜¯ä¸æ˜¯æ•°ç»„ç±»åž‹ï¼ŒEæ˜¯ä¸æ˜¯å’Œæ•°ç»„çš„ä¸‹æ ‡å˜é‡ç±»åž‹åŒ¹é…
 TypeIR*arrayVar(TreeNode*t)
 {
 	bool present = false;
@@ -2479,30 +2479,30 @@ TypeIR*arrayVar(TreeNode*t)
 	TypeIR*Eptr0 = NULL;
 	TypeIR*Eptr1 = NULL;
 	TypeIR*Eptr = NULL;
-	//·ûºÅ±íÖÐ²éÕÒ¸Ã±êÊ¶·û
+	//ç¬¦å·è¡¨ä¸­æŸ¥æ‰¾è¯¥æ ‡è¯†ç¬¦
 	present = FindEntry(t->name[0], &entry);
 	t->table[0] = entry;
-	//ÕÒµ½
+	//æ‰¾åˆ°
 	if (present != false)
 	{
-		//var0²»ÊÇ±äÁ¿
+		//var0ä¸æ˜¯å˜é‡
 		if (Findfinger(entry).kind != varKind)
 		{
-			ErrorPrompt(t->noline, t->name[0], "²»ÊÇ±äÁ¿£¡£¡£¡\n");
+			ErrorPrompt(t->noline, t->name[0], "ä¸æ˜¯å˜é‡ï¼ï¼ï¼\n");
 			Eptr = NULL;
 		}
-		else//var0²»ÊÇÊý×éÀàÐÍ±äÁ¿
+		else//var0ä¸æ˜¯æ•°ç»„ç±»åž‹å˜é‡
 		{
 			if (Findfinger(entry).idtype != NULL)
 			{
 				if (Findfinger(entry).idtype->kind != arrayTy)
 				{
-					ErrorPrompt(t->noline, t->name[0], "²»ÊÇÊý×é±äÁ¿£¡£¡£¡\n");
+					ErrorPrompt(t->noline, t->name[0], "ä¸æ˜¯æ•°ç»„å˜é‡ï¼ï¼ï¼\n");
 					Eptr = NULL;
 				}
 				else
 				{
-					//¼ì²éEµÄÀàÐÍÊÇ·ñÓëÏÂ±êÀàÐÍÏà·û
+					//æ£€æŸ¥Eçš„ç±»åž‹æ˜¯å¦ä¸Žä¸‹æ ‡ç±»åž‹ç›¸ç¬¦
 					Eptr0 = entry->idfinger.idtype->More.ArrayFigure.indexTy;
 					if (Eptr0 == NULL)
 						return NULL;
@@ -2515,7 +2515,7 @@ TypeIR*arrayVar(TreeNode*t)
 					NAME[1] = '\0';
 					if (present != 1)
 					{
-						ErrorPrompt(t->noline, NAME, "ÀàÐÍ²»Æ¥Åä£¡£¡£¡\n");
+						ErrorPrompt(t->noline, NAME, "ç±»åž‹ä¸åŒ¹é…ï¼ï¼ï¼\n");
 						Eptr = NULL;
 
 					}
@@ -2532,16 +2532,16 @@ TypeIR*arrayVar(TreeNode*t)
 
 
 	}
-	else//±êÊ¶·ûÎ´ÉùÃ÷
+	else//æ ‡è¯†ç¬¦æœªå£°æ˜Ž
 	{
-		ErrorPrompt(t->noline, t->name[0], "Ã»ÓÐÉùÃ÷£¡£¡£¡\n");
+		ErrorPrompt(t->noline, t->name[0], "æ²¡æœ‰å£°æ˜Žï¼ï¼ï¼\n");
 
 	}
 	return Eptr;
 }
 
-//´¦Àí¼ÇÂ¼±äÁ¿ÖÐÓòµÄ·ÖÎö
-//¼ì²évar:=var0.idÖÐµÄvar0ÊÇ²»ÊÇ¼ÇÂ¼ÀàÐÍ±äÁ¿£¬idÊÇ²»ÊÇ¸Ã¼ÇÂ¼ÀàÐÍÖÐµÄÓò³ÉÔ±
+//å¤„ç†è®°å½•å˜é‡ä¸­åŸŸçš„åˆ†æž
+//æ£€æŸ¥var:=var0.idä¸­çš„var0æ˜¯ä¸æ˜¯è®°å½•ç±»åž‹å˜é‡ï¼Œidæ˜¯ä¸æ˜¯è¯¥è®°å½•ç±»åž‹ä¸­çš„åŸŸæˆå‘˜
 TypeIR*recordVar(TreeNode*t)
 {
 	int present = 0;
@@ -2551,33 +2551,33 @@ TypeIR*recordVar(TreeNode*t)
 	TypeIR*Eptr1 = NULL;
 	TypeIR*Eptr = NULL;
 	fieldchain*currentP = NULL;
-	//ÔÚ·ûºÅ±íÖÐ²éÕÒ´Ë±êÊ¶·û
+	//åœ¨ç¬¦å·è¡¨ä¸­æŸ¥æ‰¾æ­¤æ ‡è¯†ç¬¦
 	present = FindEntry(t->name[0], &entry);
 	t->table[0] = entry;
-	//ÕÒµ½
+	//æ‰¾åˆ°
 	if (present != 0)
 	{
-		//Var0²»ÊÇ±äÁ¿
+		//Var0ä¸æ˜¯å˜é‡
 		if (Findfinger(entry).kind != varKind)
 		{
-			ErrorPrompt(t->noline, t->name[0], "²»ÊÇ±äÁ¿£¡£¡£¡\n");
+			ErrorPrompt(t->noline, t->name[0], "ä¸æ˜¯å˜é‡ï¼ï¼ï¼\n");
 			Eptr = NULL;
 		}
-		else//var0²»ÊÇ¼ÇÂ¼ÀàÐÍ±äÁ¿
+		else//var0ä¸æ˜¯è®°å½•ç±»åž‹å˜é‡
 		{
 			if (Findfinger(entry).idtype->kind != recordTy)
 			{
-				ErrorPrompt(t->noline, t->name[0], "²»ÊÇ¼ÇÂ¼ÀàÐÍ±äÁ¿!\n");
+				ErrorPrompt(t->noline, t->name[0], "ä¸æ˜¯è®°å½•ç±»åž‹å˜é‡!\n");
 				Eptr = NULL;
 			}
-			else//¼ì²éidÊÇ·ñÊÇºÏ·¨ÓòÃû
+			else//æ£€æŸ¥idæ˜¯å¦æ˜¯åˆæ³•åŸŸå
 			{
 				Eptr0 = entry->idfinger.idtype;
 				currentP = Eptr0->More.body;
 				while ((currentP != NULL) && (result != 0))
 				{
 					result = strcmp(t->treechild[0]->name[0], currentP->id);
-					//Èç¹ûÏàµÈ
+					//å¦‚æžœç›¸ç­‰
 					if (result == 0)
 						Eptr = currentP->UnitType;
 					else
@@ -2587,11 +2587,11 @@ TypeIR*recordVar(TreeNode*t)
 				{
 					if (result != 0)
 					{
-						ErrorPrompt(t->treechild[0]->noline, t->treechild[0]->name[0], "²»ÊÇÓòÀàÐÍ£¡£¡£¡\n");
+						ErrorPrompt(t->treechild[0]->noline, t->treechild[0]->name[0], "ä¸æ˜¯åŸŸç±»åž‹ï¼ï¼ï¼\n");
 						Eptr = NULL;
 					}
 				}
-				else//idÊÇÊý×é±äÁ¿
+				else//idæ˜¯æ•°ç»„å˜é‡
 				{
 					if (t->treechild[0]->treechild[0] != NULL)
 					{
@@ -2601,9 +2601,9 @@ TypeIR*recordVar(TreeNode*t)
 			}
 		}
 	}
-	else//±êÊ¶·ûÎ´ÉùÃ÷
+	else//æ ‡è¯†ç¬¦æœªå£°æ˜Ž
 	{
-		ErrorPrompt(t->noline, t->name[0], "Ã»ÓÐÉùÃ÷£¡£¡£¡\n");
+		ErrorPrompt(t->noline, t->name[0], "æ²¡æœ‰å£°æ˜Žï¼ï¼ï¼\n");
 
 	}
 	return Eptr;
@@ -2613,8 +2613,8 @@ TypeIR*recordVar(TreeNode*t)
 
 
 
-//´¦ÀíÓï¾ä×´Ì¬
-//¸ù¾ÝÓï·¨Ê÷½ÚµãÖÐµÄkindÏîÅÐ¶ÏÓ¦¸Ã×ªÏò´¦ÀíÄÄ¸öÓï¾äÀàº¯Êý
+//å¤„ç†è¯­å¥çŠ¶æ€
+//æ ¹æ®è¯­æ³•æ ‘èŠ‚ç‚¹ä¸­çš„kindé¡¹åˆ¤æ–­åº”è¯¥è½¬å‘å¤„ç†å“ªä¸ªè¯­å¥ç±»å‡½æ•°
 void statement(TreeNode*t)
 {
 	char NAME[2];
@@ -2630,7 +2630,7 @@ void statement(TreeNode*t)
 	case Call:callstatement(t); break;
 	case Return:returnstatement(t); break;
 	default:
-		ErrorPrompt(t->noline, NAME, "Óï¾äÀàÐÍ´íÎó£¡£¡£¡\n");
+		ErrorPrompt(t->noline, NAME, "è¯­å¥ç±»åž‹é”™è¯¯ï¼ï¼ï¼\n");
 		break;
 	}
 }
@@ -2648,8 +2648,8 @@ void statement(TreeNode*t)
 
 
 
-//´´½¨µ±Ç°¿Õ¼ÇÂ¼ÀàÐÍÖÐÓòµÄÁ´±í
-//º¯Êý·µ»Ø¸ÃÀàÐÍµÄÐÂµÄÁ´±íµÄµ¥ÔªµØÖ·
+//åˆ›å»ºå½“å‰ç©ºè®°å½•ç±»åž‹ä¸­åŸŸçš„é“¾è¡¨
+//å‡½æ•°è¿”å›žè¯¥ç±»åž‹çš„æ–°çš„é“¾è¡¨çš„å•å…ƒåœ°å€
 fieldChain*NewBody()
 {
 	fieldChain*P = (fieldChain*)malloc(sizeof(fieldChain));
@@ -2662,9 +2662,9 @@ fieldChain*NewBody()
 
 
 /*
-¸÷ÖÖÓï¾ä´¦Àíº¯Êý
+å„ç§è¯­å¥å¤„ç†å‡½æ•°
 */
-//Ìõ¼þÓï¾ä·ÖÎöÓï·¨Ê÷Èý¸ö¶ù×Ó½Úµã
+//æ¡ä»¶è¯­å¥åˆ†æžè¯­æ³•æ ‘ä¸‰ä¸ªå„¿å­èŠ‚ç‚¹
 void ifstatement(TreeNode*t)
 {
 	AccessKind*kind = NULL;
@@ -2674,20 +2674,20 @@ void ifstatement(TreeNode*t)
 	NAME[1] = '\0';
 	if (exp != NULL)
 	{
-		//´¦ÀíÌõ¼þ±í´ïÊ½
+		//å¤„ç†æ¡ä»¶è¡¨è¾¾å¼
 		if (exp->kind != boolTy)
-			ErrorPrompt(t->noline, NAME, "Ìõ¼þ±í´ïÊ½´íÎó£¡£¡£¡\n");
+			ErrorPrompt(t->noline, NAME, "æ¡ä»¶è¡¨è¾¾å¼é”™è¯¯ï¼ï¼ï¼\n");
 		else
 		{
 			TreeNode*p = t->treechild[1];
-			//´¦ÀíthenÓï¾äÐòÁÐ²¿·Ö
+			//å¤„ç†thenè¯­å¥åºåˆ—éƒ¨åˆ†
 			while (p != NULL)
 			{
 				statement(p);
 				p = p->brother;
 			}
-			t = t->treechild[2];//±ØÓÐÈý¶ù×Ó
-			//´¦ÀíelseÓï¾ä²¿·Ö
+			t = t->treechild[2];//å¿…æœ‰ä¸‰å„¿å­
+			//å¤„ç†elseè¯­å¥éƒ¨åˆ†
 			while (t != NULL)
 			{
 				statement(t);
@@ -2697,8 +2697,8 @@ void ifstatement(TreeNode*t)
 	}
 }
 
-//´¦ÀíÑ­»·Óï¾ä
-//·ÖÎöÓï·¨Ê÷µÄÁ½¸ö¶ù×Ó½Úµã
+//å¤„ç†å¾ªçŽ¯è¯­å¥
+//åˆ†æžè¯­æ³•æ ‘çš„ä¸¤ä¸ªå„¿å­èŠ‚ç‚¹
 void whilestatement(TreeNode*t)
 {
 	TypeIR*p = Expr(t->treechild[0], NULL);
@@ -2707,13 +2707,13 @@ void whilestatement(TreeNode*t)
 	NAME[1] = '\0';
 	if (p != NULL)
 	{
-		//´¦ÀíÌõ¼þ±í´ïÊ½²¿·Ö
+		//å¤„ç†æ¡ä»¶è¡¨è¾¾å¼éƒ¨åˆ†
 		if (p->kind != boolTy)
-			ErrorPrompt(t->noline, NAME, "Ìõ¼þ±í´ïÊ½´íÎó£¡£¡£¡\n");
+			ErrorPrompt(t->noline, NAME, "æ¡ä»¶è¡¨è¾¾å¼é”™è¯¯ï¼ï¼ï¼\n");
 		else
 		{
 			t = t->treechild[1];
-			//´¦ÀíÑ­»·²¿·Ö
+			//å¤„ç†å¾ªçŽ¯éƒ¨åˆ†
 			while (t != NULL)
 			{
 				statement(t);
@@ -2723,29 +2723,29 @@ void whilestatement(TreeNode*t)
 	}
 }
 
-//´¦ÀíÊäÈëÓï¾ä
-//·ÖÎöÓï·¨Ê÷½Úµã¼ì²é±äÁ¿ÓÐÎÞÉùÃ÷ºÍÊÇ·ñÎª±äÁ¿´íÎó
+//å¤„ç†è¾“å…¥è¯­å¥
+//åˆ†æžè¯­æ³•æ ‘èŠ‚ç‚¹æ£€æŸ¥å˜é‡æœ‰æ— å£°æ˜Žå’Œæ˜¯å¦ä¸ºå˜é‡é”™è¯¯
 void readstatement(TreeNode*t)
 {
 	SymbTable*entry = NULL;
 	int present = 0;
-	//ÓÃid¼ì²éÕû¸ö·ûºÅ±í
+	//ç”¨idæ£€æŸ¥æ•´ä¸ªç¬¦å·è¡¨
 	present = FindEntry(t->name[0], &entry);
 	t->table[0] = entry;
-	//Î´²éµ½±íÊ¾±äÁ¿Î´ÉùÃ÷
+	//æœªæŸ¥åˆ°è¡¨ç¤ºå˜é‡æœªå£°æ˜Ž
 	if (present == 0)
-		ErrorPrompt(t->noline, t->name[0], "Î´ÉùÃ÷£¡£¡£¡\n");
+		ErrorPrompt(t->noline, t->name[0], "æœªå£°æ˜Žï¼ï¼ï¼\n");
 	else
 	{
-		//²»ÊÇ±äÁ¿±êÊ¶·û
+		//ä¸æ˜¯å˜é‡æ ‡è¯†ç¬¦
 		if (entry->idfinger.kind != varKind)
-			ErrorPrompt(t->noline, t->name[0], "²»ÊÇ±äÁ¿±êÊ¶·û£¡\n");
+			ErrorPrompt(t->noline, t->name[0], "ä¸æ˜¯å˜é‡æ ‡è¯†ç¬¦ï¼\n");
 
 	}
 }
 
-//´¦ÀíÊä³öÓï¾ä·ÖÎö
-//·ÖÎöÊä³öÓï¾äÖÐµÄ±í´ïÊ½ÊÇ·ñºÏ·¨
+//å¤„ç†è¾“å‡ºè¯­å¥åˆ†æž
+//åˆ†æžè¾“å‡ºè¯­å¥ä¸­çš„è¡¨è¾¾å¼æ˜¯å¦åˆæ³•
 void writestatement(TreeNode*t)
 {
 	TypeIR*p = Expr(t->treechild[0], NULL);
@@ -2754,29 +2754,29 @@ void writestatement(TreeNode*t)
 	NAEM[1] = '\0';
 	if (p != NULL)
 	{
-		//Èç¹û±í´ïÊ½ÀàÐÍÎªboolÀàÐÍ£¬±¨´í
+		//å¦‚æžœè¡¨è¾¾å¼ç±»åž‹ä¸ºboolç±»åž‹ï¼ŒæŠ¥é”™
 		if (p->kind == boolTy)
-			ErrorPrompt(t->noline, NAEM, "±í´ïÊ½²»ºÏ·¨");
+			ErrorPrompt(t->noline, NAEM, "è¡¨è¾¾å¼ä¸åˆæ³•");
 	}
 }
 
 
-//´¦Àíº¯Êý·µ»ØÓï¾ä·ÖÎö
-//·ÖÎöº¯Êý·µ»ØÓï¾äÊÇ·ñÔÚÖ÷³ÌÐòÖÐ³öÏÖ
+//å¤„ç†å‡½æ•°è¿”å›žè¯­å¥åˆ†æž
+//åˆ†æžå‡½æ•°è¿”å›žè¯­å¥æ˜¯å¦åœ¨ä¸»ç¨‹åºä¸­å‡ºçŽ°
 void returnstatement(TreeNode *t)
 {
 	char a[2];
 	a[0] = ' ';
 	if (Level == 0)
 	{
-		//Èç¹û·µ»ØÓï¾ä³öÏÖÔÚÖ÷³ÌÐòÖÐ£¬±¨´í
-		ErrorPrompt(t->noline, a, "·µ»ØÓï¾ä´íÎó!!!\n");
+		//å¦‚æžœè¿”å›žè¯­å¥å‡ºçŽ°åœ¨ä¸»ç¨‹åºä¸­ï¼ŒæŠ¥é”™
+		ErrorPrompt(t->noline, a, "è¿”å›žè¯­å¥é”™è¯¯!!!\n");
 	}
 }
 
 
-//¸³ÖµÓï¾ä·ÖÎö
-//¸³ÖµÓï¾äµÄÓïÒå·ÖÎöµÄÖÕµãÊÇ¼ì²é¸´ÖÆºÃÁ½¶Ë·ÖÁ¿µÄÀàÐÍÏàÈÝÐÔ
+//èµ‹å€¼è¯­å¥åˆ†æž
+//èµ‹å€¼è¯­å¥çš„è¯­ä¹‰åˆ†æžçš„ç»ˆç‚¹æ˜¯æ£€æŸ¥å¤åˆ¶å¥½ä¸¤ç«¯åˆ†é‡çš„ç±»åž‹ç›¸å®¹æ€§
 void assignstatement(TreeNode*t)
 {
 	SymbTable*entry = NULL;
@@ -2789,14 +2789,14 @@ void assignstatement(TreeNode*t)
 	child2 = t->treechild[1];
 	if (child1->treechild[0] == NULL)
 	{
-		//ÔÚ·ûºÅ±íÖÐ²éÕÒ¸Ã±êÊ¶·û
+		//åœ¨ç¬¦å·è¡¨ä¸­æŸ¥æ‰¾è¯¥æ ‡è¯†ç¬¦
 		present = FindEntry(child1->name[0], &entry);
 		if (present != 0)
 		{
-			//id²»ÊÇ±äÁ¿
+			//idä¸æ˜¯å˜é‡
 			if (Findfinger(entry).kind != varKind)
 			{
-				ErrorPrompt(child1->noline, child1->name[0], "²»ÊÇ±äÁ¿£¡£¡£¡\n");
+				ErrorPrompt(child1->noline, child1->name[0], "ä¸æ˜¯å˜é‡ï¼ï¼ï¼\n");
 				pp = NULL;
 			}
 			else
@@ -2805,9 +2805,9 @@ void assignstatement(TreeNode*t)
 				child1->table[0] = entry;
 			}
 		}
-		else//±êÊ¶·ûÎ´ÉùÃ÷
+		else//æ ‡è¯†ç¬¦æœªå£°æ˜Ž
 		{
-			ErrorPrompt(child1->noline, child1->name[0], "Ã»ÓÐÉùÃ÷£¡£¡£¡£¡£¡\n");
+			ErrorPrompt(child1->noline, child1->name[0], "æ²¡æœ‰å£°æ˜Žï¼ï¼ï¼ï¼ï¼\n");
 
 		}
 
@@ -2826,25 +2826,25 @@ void assignstatement(TreeNode*t)
 	{
 		if ((t->nodekind == Stmt) && (t->kind.stmt == Assign))
 		{
-			//¼ì²éÊÇ²»ÊÇ¸³ÖµºÅÁ½²àÀàÐÍµÈ¼Û
+			//æ£€æŸ¥æ˜¯ä¸æ˜¯èµ‹å€¼å·ä¸¤ä¾§ç±»åž‹ç­‰ä»·
 			char a[2];
 			a[0] = ' ';
 			a[1] = '\0';
 			p = Expr(child2, NULL);
 			if (!Compare(p, pp))
 			{
-				ErrorPrompt(t->noline, a, "Á½²à±í´ïÊ½²»ÊÇÍ¬Ò»ÀàÐÍ£¡£¡£¡\n");
+				ErrorPrompt(t->noline, a, "ä¸¤ä¾§è¡¨è¾¾å¼ä¸æ˜¯åŒä¸€ç±»åž‹ï¼ï¼ï¼\n");
 			}
 		}
-		//¸³ÖµÓï¾äÖÐ²»ÄÜ³öÏÖº¯Êýµ÷ÓÃ
+		//èµ‹å€¼è¯­å¥ä¸­ä¸èƒ½å‡ºçŽ°å‡½æ•°è°ƒç”¨
 	}
 }
 
 
-//º¯Êýµ÷ÓÃÓï¾ä·ÖÎö
+//å‡½æ•°è°ƒç”¨è¯­å¥åˆ†æž
 /*
-  º¯Êýµ÷ÓÃÓï¾äµÄÓïÒå·ÖÎöÊ×ÏÈ¼ì²é·ûºÅ±íÇó³öÆäÊôÐÔÖÐµÄParam²¿·Ö£¬
-  ²¢ÓÃËü¼ì²éÐÎ²ÎºÍÊµ²ÎÖ®¼äµÄ¶ÔÓ¦¹ØÏµÊÇ·ñÕýÈ·
+  å‡½æ•°è°ƒç”¨è¯­å¥çš„è¯­ä¹‰åˆ†æžé¦–å…ˆæ£€æŸ¥ç¬¦å·è¡¨æ±‚å‡ºå…¶å±žæ€§ä¸­çš„Paraméƒ¨åˆ†ï¼Œ
+  å¹¶ç”¨å®ƒæ£€æŸ¥å½¢å‚å’Œå®žå‚ä¹‹é—´çš„å¯¹åº”å…³ç³»æ˜¯å¦æ­£ç¡®
 */
 void callstatement(TreeNode*t)
 {
@@ -2855,49 +2855,49 @@ void callstatement(TreeNode*t)
 	int present = 0;
 	SymbTable *entry = NULL;
 	TreeNode*p = NULL;
-	//ÓÃid¼ì²éÕû¸ö·ûºÅ±í
+	//ç”¨idæ£€æŸ¥æ•´ä¸ªç¬¦å·è¡¨
 	present = FindEntry(t->treechild[0]->name[0], &entry);
 	t->treechild[0]->table[0] = entry;
-	//Î´²éµ½±íÊ¾º¯ÊýÎ´ÉùÃ÷
+	//æœªæŸ¥åˆ°è¡¨ç¤ºå‡½æ•°æœªå£°æ˜Ž
 	if (present == 0)
 	{
-		ErrorPrompt(t->noline, t->treechild[0]->name[0], "º¯ÊýÎ´ÉùÃ÷£¡£¡£¡\n");
+		ErrorPrompt(t->noline, t->treechild[0]->name[0], "å‡½æ•°æœªå£°æ˜Žï¼ï¼ï¼\n");
 
 	}
 	else
 	{
-		//id²»ÊÇº¯ÊýÃû
+		//idä¸æ˜¯å‡½æ•°å
 		if (Findfinger(entry).kind != procKind)
 		{
-			ErrorPrompt(t->noline, t->name[0], "²»ÊÇº¯ÊýÃû£¡£¡£¡\n");
+			ErrorPrompt(t->noline, t->name[0], "ä¸æ˜¯å‡½æ•°åï¼ï¼ï¼\n");
 
 		}
-		else//ÐÎÊ½²ÎÊýºÍÊµÔÚ²ÎÊýÆ¥Åä
+		else//å½¢å¼å‚æ•°å’Œå®žåœ¨å‚æ•°åŒ¹é…
 		{
 			p = t->treechild[1];
-			//paramPÖ¸ÏòÐÎ²Î·ûºÅ±íµÄ±íÍ·
+			//paramPæŒ‡å‘å½¢å‚ç¬¦å·è¡¨çš„è¡¨å¤´
 			ParamTable*paramP = Findfinger(entry).Random.ProcFigure.param;
 			while ((p != NULL) && (paramP != NULL))
 			{
 				
 				SymbTable*paraentry = paramP->entry;
-				TypeIR*etp = Expr(p, &kind);//Êµ²Î
+				TypeIR*etp = Expr(p, &kind);//å®žå‚
 				if ((Findfinger(paraentry).Random.VarFigure.access == indir) && kind == dir)
-					ErrorPrompt(p->noline, a, "²ÎÊýÖÖÀà²»Æ¥Åä£¡£¡£¡\n");
+					ErrorPrompt(p->noline, a, "å‚æ•°ç§ç±»ä¸åŒ¹é…ï¼ï¼ï¼\n");
 				else
 				{
-					//²ÎÊýÀàÐÍ²»Æ¥Åä
+					//å‚æ•°ç±»åž‹ä¸åŒ¹é…
 					if ((Findfinger(paraentry).idtype) != etp)
-						ErrorPrompt(p->noline, a, "²ÎÊýÀàÐÍ²»Æ¥Åä\n");
+						ErrorPrompt(p->noline, a, "å‚æ•°ç±»åž‹ä¸åŒ¹é…\n");
 					
 				}
 				p = p->brother;
 				paramP = paramP->next;
 			}
-				//²ÎÊý¸öÊý²»Æ¥Åä
+				//å‚æ•°ä¸ªæ•°ä¸åŒ¹é…
 			if ((p != NULL) || (paramP != NULL))
 			{
-				ErrorPrompt(t->treechild[1]->noline, a, "²ÎÊý¸öÊý²»Æ¥Åä£¡£¡£¡\n");
+				ErrorPrompt(t->treechild[1]->noline, a, "å‚æ•°ä¸ªæ•°ä¸åŒ¹é…ï¼ï¼ï¼\n");
 
 			}
 
@@ -2913,7 +2913,7 @@ void callstatement(TreeNode*t)
 
 
 
-//´¦ÀíÖ´ÐÐÌå²¿·ÖµÄÓïÒå·ÖÎö
+//å¤„ç†æ‰§è¡Œä½“éƒ¨åˆ†çš„è¯­ä¹‰åˆ†æž
 void Body(TreeNode*t)
 {
 	if (t->nodekind == StmL)
@@ -2921,64 +2921,64 @@ void Body(TreeNode*t)
 		TreeNode*p = t->treechild[0];
 		while (p != NULL)
 		{
-			statement(p);//µ÷ÓÃÓï¾ä×´Ì¬´¦Àíº¯Êý
-			p = p->brother;//ÒÀ´Î¶ÁÈëÓï·¨Ê÷Óï¾äÐòÁÐµÄÐÖµÜ½Úµã
+			statement(p);//è°ƒç”¨è¯­å¥çŠ¶æ€å¤„ç†å‡½æ•°
+			p = p->brother;//ä¾æ¬¡è¯»å…¥è¯­æ³•æ ‘è¯­å¥åºåˆ—çš„å…„å¼ŸèŠ‚ç‚¹
 		}
 	}
 }
 
-/*´¦Àí¼ÇÂ¼ÀàÐÍµÄÄÚ²¿±íÊ¾
-ÀàÐÍÎª¼ÇÂ¼ÀàÐÍÊ±£¬ÊÇÓÉ¼ÇÂ¼Ìå×é³ÉµÄ¡£ÆäÄÚ²¿½ÚµãÐè
-Òª°üÀ¨3¸öÐÅÏ¢ : Ò»ÊÇ¿Õ¼ä´óÐ¡size£»¶þÊÇÀàÐÍÖÖÀà±êÖ¾
-recordTy; ÈýÊÇÌå²¿·ÖµÄ½ÚµãµØÖ·body¡£¼ÇÂ¼ÀàÐÍÖÐµÄ
-ÓòÃû¶¼ÊÇ±êÊ¶·ûµÄ¶¨ÒåÐÔ³öÏÖ£¬Òò´ËÐèÒª¼ÇÂ¼ÆäÊôÐÔ¡£
+/*å¤„ç†è®°å½•ç±»åž‹çš„å†…éƒ¨è¡¨ç¤º
+ç±»åž‹ä¸ºè®°å½•ç±»åž‹æ—¶ï¼Œæ˜¯ç”±è®°å½•ä½“ç»„æˆçš„ã€‚å…¶å†…éƒ¨èŠ‚ç‚¹éœ€
+è¦åŒ…æ‹¬3ä¸ªä¿¡æ¯ : ä¸€æ˜¯ç©ºé—´å¤§å°sizeï¼›äºŒæ˜¯ç±»åž‹ç§ç±»æ ‡å¿—
+recordTy; ä¸‰æ˜¯ä½“éƒ¨åˆ†çš„èŠ‚ç‚¹åœ°å€bodyã€‚è®°å½•ç±»åž‹ä¸­çš„
+åŸŸåéƒ½æ˜¯æ ‡è¯†ç¬¦çš„å®šä¹‰æ€§å‡ºçŽ°ï¼Œå› æ­¤éœ€è¦è®°å½•å…¶å±žæ€§ã€‚
 */
 TypeIR*recordType(TreeNode*t)
 {
-	TypeIR*Ptr = NewTy(recordTy);//ÐÂ½¨¼ÇÂ¼ÀàÐÍ½Úµã
-	t = t->treechild[0];//´ÓÓï·¨Ê÷µÄ¶ù×Ó½Úµã¶ÁÈ¡ÓòÐÅÏ¢
+	TypeIR*Ptr = NewTy(recordTy);//æ–°å»ºè®°å½•ç±»åž‹èŠ‚ç‚¹
+	t = t->treechild[0];//ä»Žè¯­æ³•æ ‘çš„å„¿å­èŠ‚ç‚¹è¯»å–åŸŸä¿¡æ¯
 	fieldChain*Ptr2 = NULL;
 	fieldChain*Ptr1 = NULL;
 	fieldChain*body = NULL;
 	while (t != NULL)
 	{
-		//ÌîÐ´ptr2Ö¸ÏòµÄÄÚÈÝ½Úµã
-		//ÖîÈçint a£¬b£»
+		//å¡«å†™ptr2æŒ‡å‘çš„å†…å®¹èŠ‚ç‚¹
+		//è¯¸å¦‚int aï¼Œbï¼›
 		for (int i = 0; i < t->samenum; i++)
 		{
 			Ptr2 = NewBody();
 			if (body == NULL)
 				body = Ptr1 = Ptr2;
-			//ÌîÐ´Ptr2µÄ¸÷¸ö³ÉÔ±ÄÚÈÝ
+			//å¡«å†™Ptr2çš„å„ä¸ªæˆå‘˜å†…å®¹
 			strcpy(Ptr2->id, t->name[i]);
 			Ptr2->UnitType = TypeProcess(t, t->kind.dec);
 			Ptr2->next = NULL;
-			//Èç¹ûPtr1£¡=Ptr2ÄÇÃ´½«Ö¸ÕëºóÒÆ
+			//å¦‚æžœPtr1ï¼=Ptr2é‚£ä¹ˆå°†æŒ‡é’ˆåŽç§»
 			if (Ptr2 != Ptr1)
 			{
-				//¼ÆËãÐÂÉêÇëµÄµ¥Ôªoff
+				//è®¡ç®—æ–°ç”³è¯·çš„å•å…ƒoff
 				Ptr2->off = (Ptr1->off) + (Ptr1->UnitType->size);
 				Ptr1->next = Ptr2;
 				Ptr1 = Ptr2;
 			}
 		}
-		//´¦ÀíÍêÍ¬ÀàÐÍ±äÁ¿ºóÈ¡Óï·¨Ê÷µÄÐÖµÜ½Úµã
+		//å¤„ç†å®ŒåŒç±»åž‹å˜é‡åŽå–è¯­æ³•æ ‘çš„å…„å¼ŸèŠ‚ç‚¹
 		t = t->brother;
 
 	}
-	//´¦Àí¼ÇÂ¼ÀàÐÍÄÚ²¿½á¹¹
-	//È¡Ptr2µÄoffÎª×îºóÕû¸ö¼ÇÂ¼µÄsize
+	//å¤„ç†è®°å½•ç±»åž‹å†…éƒ¨ç»“æž„
+	//å–Ptr2çš„offä¸ºæœ€åŽæ•´ä¸ªè®°å½•çš„size
 	Ptr->size = Ptr2->off + (Ptr2->UnitType->size);
-	//½«ÓòÁ´Á´Èë¼ÇÂ¼ÀàÐÍµÄbody²¿·Ö
+	//å°†åŸŸé“¾é“¾å…¥è®°å½•ç±»åž‹çš„bodyéƒ¨åˆ†
 	Ptr->More.body = body;
 	return Ptr;
 }
 
 
 /*
-   ¸Ãº¯Êý´¦Àíº¯ÊýÍ·ÖÐµÄ²ÎÊýÉùÃ÷µÄÓïÒå·ÖÎö
-   ÔÚÐÂµÄ·ûºÅ±íÖÐµÇ¼ÇËùÓÐÐÎ²ÎµÄ±íÏî£¬¹¹ÔìÐÎ²Î±íÏîµÄ
-   µØÖ·±í£¬²¢ÓÐparamÖ¸ÏòÆä¡£
+   è¯¥å‡½æ•°å¤„ç†å‡½æ•°å¤´ä¸­çš„å‚æ•°å£°æ˜Žçš„è¯­ä¹‰åˆ†æž
+   åœ¨æ–°çš„ç¬¦å·è¡¨ä¸­ç™»è®°æ‰€æœ‰å½¢å‚çš„è¡¨é¡¹ï¼Œæž„é€ å½¢å‚è¡¨é¡¹çš„
+   åœ°å€è¡¨ï¼Œå¹¶æœ‰paramæŒ‡å‘å…¶ã€‚
 */
 ParamTable*ParaDecList(TreeNode*t)
 {
@@ -2989,14 +2989,14 @@ ParamTable*ParaDecList(TreeNode*t)
 	if (t != NULL)
 	{
 		if (t->treechild[0] != NULL)
-			p = t->treechild[0];//³ÌÐòÉùÃ÷½ÚµãµÄµÚÒ»¸ö¶ù×Ó½Úµã
-		CreatTable();//½øÈëÐÂµÄ¾Ö²¿»¯Çø
-		Off = 7;//×Ó³ÌÐòÖÐµÄ±äÁ¿³õÊ¼Æ«ÒÆÉèÎª8
-		VarDecPart(p);//±äÁ¿ÉùÃ÷²¿·Ö
+			p = t->treechild[0];//ç¨‹åºå£°æ˜ŽèŠ‚ç‚¹çš„ç¬¬ä¸€ä¸ªå„¿å­èŠ‚ç‚¹
+		CreatTable();//è¿›å…¥æ–°çš„å±€éƒ¨åŒ–åŒº
+		Off = 7;//å­ç¨‹åºä¸­çš„å˜é‡åˆå§‹åç§»è®¾ä¸º8
+		VarDecPart(p);//å˜é‡å£°æ˜Žéƒ¨åˆ†
 		SymbTable*Ptr0 = scope[Level];
-		while (Ptr0 != NULL)//Ö»Òª²»Îª¿Õ¾Í·ÃÎÊÆäÐÖµÜ½Úµã
+		while (Ptr0 != NULL)//åªè¦ä¸ä¸ºç©ºå°±è®¿é—®å…¶å…„å¼ŸèŠ‚ç‚¹
 		{
-			//¹¹ÔìÐÎ²Î·ûºÅ±í£¬²¢Ê¹ÆäÁ¬½ÓÖÁ·ûºÅ±íµÄparamÏî
+			//æž„é€ å½¢å‚ç¬¦å·è¡¨ï¼Œå¹¶ä½¿å…¶è¿žæŽ¥è‡³ç¬¦å·è¡¨çš„paramé¡¹
 			Ptr2 = NewParam();
 			if (head == NULL)
 				head = Ptr1 = Ptr2;
@@ -3012,7 +3012,7 @@ ParamTable*ParaDecList(TreeNode*t)
 		}
 
 	}
-	return head;//·µ»ØÐÎ²Î·ûºÅ±íµÄÍ·Ö¸Õë
+	return head;//è¿”å›žå½¢å‚ç¬¦å·è¡¨çš„å¤´æŒ‡é’ˆ
 }
 
 
@@ -3022,26 +3022,26 @@ ParamTable*ParaDecList(TreeNode*t)
 
 
 /*
-   ¸Ãº¯Êý´¦Àíº¯ÊýÍ·µÄÓïÒå·ÖÎö
-   ÔÚµ±Ç°²ã·ûºÅ±íÖÐÌîÐ´º¯Êý±êÊ¶·ûµÄÊôÐÔ£»ÔÚÐÂ²ã·ûºÅ
-   ±íÖÐÌîÐ´ÐÎ²Î±êÊ¶·ûµÄÊôÐÔ¡£ÆäÖÐ¹ý³ÌµÄ´óÐ¡ºÍ´úÂë¶¼
-   ÐèÒÔºó»ØÌî¡£
+   è¯¥å‡½æ•°å¤„ç†å‡½æ•°å¤´çš„è¯­ä¹‰åˆ†æž
+   åœ¨å½“å‰å±‚ç¬¦å·è¡¨ä¸­å¡«å†™å‡½æ•°æ ‡è¯†ç¬¦çš„å±žæ€§ï¼›åœ¨æ–°å±‚ç¬¦å·
+   è¡¨ä¸­å¡«å†™å½¢å‚æ ‡è¯†ç¬¦çš„å±žæ€§ã€‚å…¶ä¸­è¿‡ç¨‹çš„å¤§å°å’Œä»£ç éƒ½
+   éœ€ä»¥åŽå›žå¡«ã€‚
 */
 SymbTable*HeadProcess(TreeNode*t)
 {
 	IDfigure  idfigure;
 	bool present = false;
 	SymbTable *entry = NULL;
-	//ÊôÐÔ
+	//å±žæ€§
 	idfigure.kind = procKind;
 	idfigure.idtype = NULL;
 	idfigure.Random.ProcFigure.level = Level + 1;
 	if (t != NULL)
 	{
-		//µÇ¼Çº¯ÊýµÄ·ûºÅ±íÏî
+		//ç™»è®°å‡½æ•°çš„ç¬¦å·è¡¨é¡¹
 		present = Enter(t->name[0], &idfigure, &entry);
 		t->table[0] = entry;
-		//´¦ÀíÐÎ²ÎÉùÃ÷±í
+		//å¤„ç†å½¢å‚å£°æ˜Žè¡¨
 	}
 	entry->idfinger.Random.ProcFigure.param = ParaDecList(t);
 	return entry;
@@ -3054,19 +3054,19 @@ SymbTable*HeadProcess(TreeNode*t)
 
 
 
-//ÀàÐÍ·ÖÎö
-//´¦ÀíÓï·¨Ê÷µÄµ±Ç°½ÚµãÀàÐÍ£¬¹¹Ôì³öµ±Ç°½ÚµãÀàÐÍµÄÄÚ²¿
-//±íÊ¾²¢½«ÆäµØÖ··µ»Ø¸øPtrÀàÐÍÄÚ²¿±íÊ¾µÄµØÖ·
+//ç±»åž‹åˆ†æž
+//å¤„ç†è¯­æ³•æ ‘çš„å½“å‰èŠ‚ç‚¹ç±»åž‹ï¼Œæž„é€ å‡ºå½“å‰èŠ‚ç‚¹ç±»åž‹çš„å†…éƒ¨
+//è¡¨ç¤ºå¹¶å°†å…¶åœ°å€è¿”å›žç»™Ptrç±»åž‹å†…éƒ¨è¡¨ç¤ºçš„åœ°å€
 TypeIR*TypeProcess(TreeNode*t, DeclareKind deckind)
 {
 	TypeIR*Ptr = NULL;
 	switch (deckind)
 	{
-	case Id:Ptr = nameType(t); break;//ÀàÐÍÎª×Ô¶¨Òå±íÊ¾·û
-	case Array:Ptr = arrayType(t); break;//ÀàÐÍÎªÊý×éÀàÐÍ
-	case Record:Ptr = recordType(t); break;//ÀàÐÍÎª¼ÇÂ¼ÀàÐÍ
-	case Integer:Ptr = intPtr; break;//ÀàÐÍÎªÕûÊýÀàÐÍ
-	case Char:Ptr = charPtr; break;//ÀàÐÍÎª×Ö·ûÀàÐÍ
+	case Id:Ptr = nameType(t); break;//ç±»åž‹ä¸ºè‡ªå®šä¹‰è¡¨ç¤ºç¬¦
+	case Array:Ptr = arrayType(t); break;//ç±»åž‹ä¸ºæ•°ç»„ç±»åž‹
+	case Record:Ptr = recordType(t); break;//ç±»åž‹ä¸ºè®°å½•ç±»åž‹
+	case Integer:Ptr = intPtr; break;//ç±»åž‹ä¸ºæ•´æ•°ç±»åž‹
+	case Char:Ptr = charPtr; break;//ç±»åž‹ä¸ºå­—ç¬¦ç±»åž‹
 	}
 	return Ptr;
 
@@ -3075,26 +3075,26 @@ TypeIR*TypeProcess(TreeNode*t, DeclareKind deckind)
 
 
 /********************************************/
-//              ÀàÐÍÉùÃ÷µÄÓïÒå·ÖÎö
+//              ç±»åž‹å£°æ˜Žçš„è¯­ä¹‰åˆ†æž
 /*********************************************/
-/*¸Ãº¯Êý´¦ÀíÀàÐÍÉùÃ÷µÄÓïÒå·ÖÎö                     */
-/*Óöµ½ÀàÐÍTÊ±£¬¹¹ÔìÆäÄÚ²¿½ÚµãTPtr£»¶ÔÓÚ"idname=T"¹¹
-Ôì·ûºÅ±íÏî£»¼ì²é±¾²ãÀàÐÍÉùÃ÷ÖÐÊÇ·ñÓÐÖØ¸´¶¨Òå´íÎó.*/
+/*è¯¥å‡½æ•°å¤„ç†ç±»åž‹å£°æ˜Žçš„è¯­ä¹‰åˆ†æž                     */
+/*é‡åˆ°ç±»åž‹Tæ—¶ï¼Œæž„é€ å…¶å†…éƒ¨èŠ‚ç‚¹TPtrï¼›å¯¹äºŽ"idname=T"æž„
+é€ ç¬¦å·è¡¨é¡¹ï¼›æ£€æŸ¥æœ¬å±‚ç±»åž‹å£°æ˜Žä¸­æ˜¯å¦æœ‰é‡å¤å®šä¹‰é”™è¯¯.*/
 void TypeDecPart(TreeNode*t)
 {
 	bool present = false;
 	IDfigure idfigure;
 	SymbTable*entry = NULL;
-	//ÊôÐÔ×÷Îª²ÎÊý
+	//å±žæ€§ä½œä¸ºå‚æ•°
 	idfigure.kind = typeKind;
-	//±éÀúÓï·¨Ê÷µÄÐÖµÜ½Úµã
+	//éåŽ†è¯­æ³•æ ‘çš„å…„å¼ŸèŠ‚ç‚¹
 	while (t != NULL)
 	{
-		//µ÷ÓÃ¼ÇÂ¼ÊôÐÔº¯Êý£¬·µ»ØÊÇ·ñÖØ¸´ÉùÃ÷´íÎóºÍÈë¿ÚµØÖ·
+		//è°ƒç”¨è®°å½•å±žæ€§å‡½æ•°ï¼Œè¿”å›žæ˜¯å¦é‡å¤å£°æ˜Žé”™è¯¯å’Œå…¥å£åœ°å€
 		present = Enter(t->name[0], &idfigure, &entry);
 		if (present != false)
 		{
-			ErrorPrompt(t->noline, t->name[0], "ÖØ¸´¶¨ÒåÁË£¡£¡£¡\n");
+			ErrorPrompt(t->noline, t->name[0], "é‡å¤å®šä¹‰äº†ï¼ï¼ï¼\n");
 			entry = NULL;
 		}
 		else
@@ -3105,10 +3105,10 @@ void TypeDecPart(TreeNode*t)
 }
 
 
-//´¦Àí±äÁ¿ÉùÃ÷µÄÓïÒå·ÖÎö
+//å¤„ç†å˜é‡å£°æ˜Žçš„è¯­ä¹‰åˆ†æž
 /*
-   µ±Óöµ½±äÁ¿±êÊ¶·ûidÊ±°ÑidµÇ¼Çµ½·ûºÅ±íÖÐ£¬¼ì²éÖØ¸´ÐÔ¶¨Òå£»Óöµ½ÀàÐÍÊ±
-   ¹¹ÔìÆäÄÚ²¿±íÊ¾
+   å½“é‡åˆ°å˜é‡æ ‡è¯†ç¬¦idæ—¶æŠŠidç™»è®°åˆ°ç¬¦å·è¡¨ä¸­ï¼Œæ£€æŸ¥é‡å¤æ€§å®šä¹‰ï¼›é‡åˆ°ç±»åž‹æ—¶
+   æž„é€ å…¶å†…éƒ¨è¡¨ç¤º
 */
 void varDecList(TreeNode*t)
 {
@@ -3121,32 +3121,32 @@ void varDecList(TreeNode*t)
 		for (int i = 0; i < t->samenum; i++)
 		{
 			idfigure.idtype = TypeProcess(t, t->kind.dec);
-			//ÅÐ¶ÏÊÇÖµ²Î»¹ÊÇ±ä²Îaccess£¨dir£¬indir£©
+			//åˆ¤æ–­æ˜¯å€¼å‚è¿˜æ˜¯å˜å‚accessï¼ˆdirï¼Œindirï¼‰
 			if (t->Figure.ProcFigure.paramtype == Varpa)
 			{
 				idfigure.Random.VarFigure.access = indir;
 				idfigure.Random.VarFigure.level = Level;
-				//¼ÆËã ÐÎ²ÎµÄÆ«ÒÆ
+				//è®¡ç®— å½¢å‚çš„åç§»
 				idfigure.Random.VarFigure.off = Off;
 				Off++;
-			}//Èç¹ûÊÇ±ä²ÎÔòÆ«ÒÆ¼ÓÒ»
+			}//å¦‚æžœæ˜¯å˜å‚åˆ™åç§»åŠ ä¸€
 			else
 			{
 				idfigure.Random.VarFigure.access = dir;
 				idfigure.Random.VarFigure.level = Level;
-				//Öµ²ÎÆ«ÒÆ
+				//å€¼å‚åç§»
 				if (idfigure.idtype != NULL)
 				{
 					idfigure.Random.VarFigure.off = Off;
 					Off = Off + (idfigure.idtype->size);
 				}
 
-			}//·ñÔòÎªÖµ²ÎÆ«ÒÆ¼Ó±äÁ¿ÀàÐÍµÄsize
-			//µÇ¼Ç¸Ã±äÁ¿µÄÊôÐÔ¼°Ãû×Ö£¬²¢·µ»ØÆäÀàÐÍÄÚ²¿Ö¸Õë
+			}//å¦åˆ™ä¸ºå€¼å‚åç§»åŠ å˜é‡ç±»åž‹çš„size
+			//ç™»è®°è¯¥å˜é‡çš„å±žæ€§åŠåå­—ï¼Œå¹¶è¿”å›žå…¶ç±»åž‹å†…éƒ¨æŒ‡é’ˆ
 			p = Enter(t->name[i], &idfigure, &entry);
 			if (p != false)
 			{
-				ErrorPrompt(t->noline, t->name[i], "ÖØ¶¨Òå£¡£¡£¡\n");
+				ErrorPrompt(t->noline, t->name[i], "é‡å®šä¹‰ï¼ï¼ï¼\n");
 			}
 			else
 				t->table[i] = entry;
@@ -3157,16 +3157,16 @@ void varDecList(TreeNode*t)
 			t = t->brother;
 		}
 	}
-	//Èç¹ûÊÇÖ÷³ÌÐò£¬Ôò¼ÇÂ¼´ËÊ±Æ«ÒÆ
+	//å¦‚æžœæ˜¯ä¸»ç¨‹åºï¼Œåˆ™è®°å½•æ­¤æ—¶åç§»
 	if (Level == 0)
 		mainoff = Off;
-	else//Èç¹û²»ÊÇÖ÷³ÌÐòÔò¼ÇÂ¼´ËÊ±Æ«ÒÆ£¬ÓÃÓÚÏÂÃæÌîÐ´¹ý³ÌÐÅÏ¢±íµÄnoffÐÅÏ¢
+	else//å¦‚æžœä¸æ˜¯ä¸»ç¨‹åºåˆ™è®°å½•æ­¤æ—¶åç§»ï¼Œç”¨äºŽä¸‹é¢å¡«å†™è¿‡ç¨‹ä¿¡æ¯è¡¨çš„noffä¿¡æ¯
 		savedOff = Off;
 
 }
 
-//´¦Àí±äÁ¿ÉùÃ÷µÄÓïÒå·ÖÎö
-//µ÷ÓÃ±äÁ¿´¦Àí·ÖÎöº¯Êý
+//å¤„ç†å˜é‡å£°æ˜Žçš„è¯­ä¹‰åˆ†æž
+//è°ƒç”¨å˜é‡å¤„ç†åˆ†æžå‡½æ•°
 void VarDecPart(TreeNode*t)
 {
 	varDecList(t);
@@ -3174,29 +3174,29 @@ void VarDecPart(TreeNode*t)
 
 
 
-//º¯Êý´¦Àí¹ý³ÌÉùÃ÷µÄÓïÒå·ÖÎö
-//ÔÚµ±Ç°²ã·ûºÅ±íÖÐÌîÐ´¹ý³Ì±êÊ¶·ûµÄÊôÐÔ£¬ÔÚÐÂ²ã·ûºÅ±íÖÐ
-//ÌîÐ´ÐÎ²Î±êÊ¶·ûµÄÊôÐÔ
+//å‡½æ•°å¤„ç†è¿‡ç¨‹å£°æ˜Žçš„è¯­ä¹‰åˆ†æž
+//åœ¨å½“å‰å±‚ç¬¦å·è¡¨ä¸­å¡«å†™è¿‡ç¨‹æ ‡è¯†ç¬¦çš„å±žæ€§ï¼Œåœ¨æ–°å±‚ç¬¦å·è¡¨ä¸­
+//å¡«å†™å½¢å‚æ ‡è¯†ç¬¦çš„å±žæ€§
 void procDecPart(TreeNode*t)
 {
 	TreeNode*p = t;
-	SymbTable*entry = HeadProcess(t);//´¦Àí¹ý³ÌÍ·
+	SymbTable*entry = HeadProcess(t);//å¤„ç†è¿‡ç¨‹å¤´
 	t = t->treechild[1];
 	char*NAME = new char[2];
 	NAME[0] = ' ';
 	NAME[1] = '\0';
-	//Èç¹û¹ý³ÌÄÚ²¿´æÔÚÉùÃ÷²¿·Ö£¬Ôò´¦ÀíÉùÃ÷²¿·Ö
+	//å¦‚æžœè¿‡ç¨‹å†…éƒ¨å­˜åœ¨å£°æ˜Žéƒ¨åˆ†ï¼Œåˆ™å¤„ç†å£°æ˜Žéƒ¨åˆ†
 	while (t != NULL)
 	{
 		switch (t->nodekind)
 		{
 		case Type:TypeDecPart(t->treechild[0]); break;
 		case Var:VarDecPart(t->treechild[0]); break;
-			//Èç¹ûÉùÃ÷²¿·ÖÓÐº¯ÊýÉùÃ÷£¬ÔòÌø³öÑ­»·£¬ÏÈÌîÐ´noffºÍmoff
-			//µÈÐÅÏ¢£¬ÔÙ´¦Àíº¯ÊýÉùÃ÷µÄÑ­»·´¦Àí£¬¸ºÔðÎÞ·¨±£´ænoffºÍmoffµÄÖµ
+			//å¦‚æžœå£°æ˜Žéƒ¨åˆ†æœ‰å‡½æ•°å£°æ˜Žï¼Œåˆ™è·³å‡ºå¾ªçŽ¯ï¼Œå…ˆå¡«å†™noffå’Œmoff
+			//ç­‰ä¿¡æ¯ï¼Œå†å¤„ç†å‡½æ•°å£°æ˜Žçš„å¾ªçŽ¯å¤„ç†ï¼Œè´Ÿè´£æ— æ³•ä¿å­˜noffå’Œmoffçš„å€¼
 		case FuncDec:break;
 		default:
-			ErrorPrompt(t->noline, NAME, "ÔÚÓï·¨·ÖÎöÊ÷ÖÖÃ»ÓÐÕâ¸ö½ÚµãÀàÐÍ£¡£¡\n");
+			ErrorPrompt(t->noline, NAME, "åœ¨è¯­æ³•åˆ†æžæ ‘ç§æ²¡æœ‰è¿™ä¸ªèŠ‚ç‚¹ç±»åž‹ï¼ï¼\n");
 			break;
 		}
 		if (t->nodekind == FuncDec)
@@ -3206,19 +3206,19 @@ void procDecPart(TreeNode*t)
 	}
 	entry->idfinger.Random.ProcFigure.noff = savedOff;
 	entry->idfinger.Random.ProcFigure.moff = entry->idfinger.Random.ProcFigure.noff + entry->idfinger.Random.ProcFigure.level + 1;
-	//¹ý³Ì»î¶¯¼ÇÂ¼µÄ³¤¶ÈµÈÓÚnoff¼ÓÉÏdisplay±íµÄ³¤¶È
-	//diaplay±íµÄ³¤¶ÈµÈÓÚ¹ý³ÌËùÔÚ²ãÊý¼ÓÒ»
-	//´¦Àí³ÌÐòµÄÉùÃ÷²¿·Ö
+	//è¿‡ç¨‹æ´»åŠ¨è®°å½•çš„é•¿åº¦ç­‰äºŽnoffåŠ ä¸Šdisplayè¡¨çš„é•¿åº¦
+	//diaplayè¡¨çš„é•¿åº¦ç­‰äºŽè¿‡ç¨‹æ‰€åœ¨å±‚æ•°åŠ ä¸€
+	//å¤„ç†ç¨‹åºçš„å£°æ˜Žéƒ¨åˆ†
 	while (t != NULL)
 	{
 		procDecPart(t);
 		t = t->brother;
 	}
 	t = p;
-	Body(t->treechild[2]);//´¦ÀíBlock
-	//º¯Êý²¿·Ö½áÊøÉ¾³ý½øÈëÐÎ²ÎÊ±ÐÂ½¨Á¢µÄ·ûºÅ±í
+	Body(t->treechild[2]);//å¤„ç†Block
+	//å‡½æ•°éƒ¨åˆ†ç»“æŸåˆ é™¤è¿›å…¥å½¢å‚æ—¶æ–°å»ºç«‹çš„ç¬¦å·è¡¨
 	if (Level != -1)
-		DestroyTable();//½áÊøµ±Ç°scope
+		DestroyTable();//ç»“æŸå½“å‰scope
 }
 
 
@@ -3227,8 +3227,8 @@ void procDecPart(TreeNode*t)
 
 
 
-//º¯Êý´¦Àí×ÜµÄÓïÒå·ÖÎö
-//¶ÔÓï·¨Ê÷½øÐÐ·ÖÎö
+//å‡½æ•°å¤„ç†æ€»çš„è¯­ä¹‰åˆ†æž
+//å¯¹è¯­æ³•æ ‘è¿›è¡Œåˆ†æž
 void analyze(TreeNode*t)
 {
 	char a[2];
@@ -3237,11 +3237,11 @@ void analyze(TreeNode*t)
 	SymbTable*entry = NULL;
 	TreeNode *p = NULL;
 	TreeNode*pp = t;
-	//´´½¨·ûºÅ±í
+	//åˆ›å»ºç¬¦å·è¡¨
 	CreatTable();
-	//µ÷ÓÃÀàÐÍÄÚ²¿±íÊ¾³õÊ¼»¯º¯Êý
+	//è°ƒç”¨ç±»åž‹å†…éƒ¨è¡¨ç¤ºåˆå§‹åŒ–å‡½æ•°
 	initialize();
-	//Óï·¨Ê÷ÉùÃ÷½Úµã
+	//è¯­æ³•æ ‘å£°æ˜ŽèŠ‚ç‚¹
 	p = t->treechild[1];
 	while (p != NULL)
 	{
@@ -3251,40 +3251,40 @@ void analyze(TreeNode*t)
 		case Var:VarDecPart(p->treechild[0]); break;
 		case FuncDec:procDecPart(p); break;
 		default:
-			ErrorPrompt(p->noline, a, "Ã»ÓÐÕâ¸ö½ÚµãÀàÐÍ£¡£¡\n");
+			ErrorPrompt(p->noline, a, "æ²¡æœ‰è¿™ä¸ªèŠ‚ç‚¹ç±»åž‹ï¼ï¼\n");
 			break;
 		}
 		p = p->brother;
 	}
-	//³ÌÐòÌå
+	//ç¨‹åºä½“
 	t = t->treechild[2];
 	if (t->nodekind == StmL)
 		Body(t);
-	//³·Ïú·ûºÅ±í
+	//æ’¤é”€ç¬¦å·è¡¨
 	if (Level != -1)
 		DestroyTable();
-	//Êä³öÓïÒå´íÎó
+	//è¾“å‡ºè¯­ä¹‰é”™è¯¯
 	if (Error == 1)
-		fprintf(listing, "\nÓïÒå´íÎóÈçÏÂ£º\n");
-	//Èç¹ûÎÞ´íÎóÔòÊä³öÌáÊ¾ÐÅÏ¢
+		fprintf(listing, "\nè¯­ä¹‰é”™è¯¯å¦‚ä¸‹ï¼š\n");
+	//å¦‚æžœæ— é”™è¯¯åˆ™è¾“å‡ºæç¤ºä¿¡æ¯
 	else
 	{
-		fprintf(listing, "\nÎÞÓïÒå´íÎó£¡£¡£¡£¡\n");
+		fprintf(listing, "\næ— è¯­ä¹‰é”™è¯¯ï¼ï¼ï¼ï¼\n");
 	}
 }
 
 
-//´òÓ¡·ûºÅ±íµÄÒ»²ã
+//æ‰“å°ç¬¦å·è¡¨çš„ä¸€å±‚
 void PrintOneLayer(int level)
 {
 	SymbTable*t = scope[level];
-	fprintf(listing, "\n   µÚ%d²ã·ûºÅ±í    \n",level);
+	fprintf(listing, "\nç¬¬%då±‚ç¬¦å·è¡¨    \n\n\n",level);
 	while (t != NULL)
 	{
-		//Êä³ö±íÊ¾·ûµÄÃû×Ö
+		//è¾“å‡ºè¡¨ç¤ºç¬¦çš„åå­—
 		fprintf(listing, "%s:     ", t->idName);
 		IDfigure*idfigure = &(t->idfinger);
-		//Êä³ö±íÊ¾·ûµÄÀàÐÍÐÅÏ¢£¬¹ý³Ì±íÊ¾·û³ýÍâ
+		//è¾“å‡ºè¡¨ç¤ºç¬¦çš„ç±»åž‹ä¿¡æ¯ï¼Œè¿‡ç¨‹è¡¨ç¤ºç¬¦é™¤å¤–
 		if (idfigure->idtype != NULL)
 		{
 			switch (idfigure->idtype->kind)
@@ -3296,7 +3296,7 @@ void PrintOneLayer(int level)
 			default:fprintf(listing, "error type!!!!"); break;
 			}
 
-		}//Êä³ö±íÊ¾·ûµÄÀà±ð²¢¸ù¾Ý²»Í¬ÀàÐÍÊä³ö²»Í¬ÆäËûÊôÐÔ
+		}//è¾“å‡ºè¡¨ç¤ºç¬¦çš„ç±»åˆ«å¹¶æ ¹æ®ä¸åŒç±»åž‹è¾“å‡ºä¸åŒå…¶ä»–å±žæ€§
 		switch (idfigure->kind)
 		{
 		case typeKind:
@@ -3327,13 +3327,11 @@ void PrintOneLayer(int level)
 }
 
 
-
-
-//´òÓ¡·ûºÅ±í
+//æ‰“å°ç¬¦å·è¡¨
 
 void PrintSymbTable()
 {
-	//²ãÊý´ÓÁã¿ªÊ¼
+	//å±‚æ•°ä»Žé›¶å¼€å§‹
 	int level = 0;
 	while (scope[level] != NULL)
 	{
@@ -3344,64 +3342,64 @@ void PrintSymbTable()
 
 
 /********************************************************/
-/*                Ö÷º¯Êý                                 */
+/*                ä¸»å‡½æ•°                                 */
 /*********************************************************/
 int main()
 {
-	char*file = (char*)malloc(sizeof(char) * 100);//ÊäÈëÒª±àÒëµÄÎÄ¼þÃû
-	printf("ÇëÊäÈëÔ´³ÌÐòÎÄ¼þÃû:\n");
+	char*file = (char*)malloc(sizeof(char) * 100);//è¾“å…¥è¦ç¼–è¯‘çš„æ–‡ä»¶å
+	printf("è¯·è¾“å…¥æºç¨‹åºæ–‡ä»¶å:\n");
 	scanf("%s", file);
-	source = fopen(file, "r");//ÓÃÖ»¶Á·½Ê½´ò¿ªfile²¢½«ÎÄ¼þÖ¸Õë´«ËÍ¸øsource¡£
+	source = fopen(file, "r");//ç”¨åªè¯»æ–¹å¼æ‰“å¼€fileå¹¶å°†æ–‡ä»¶æŒ‡é’ˆä¼ é€ç»™sourceã€‚
 	if (source == NULL)
 	{
 		printf("File %s is not found\n", file);
 		exit(1);
 	}
 	listing = stdout;
-	fprintf(listing, "\n³ÌÐò½á¹¹£¨º¬ÐÐºÅ£©%s\n", file);
-	//´Ê·¨·ÖÎö³ÌÐò
+	fprintf(listing, "\nç¨‹åºç»“æž„ï¼ˆå«è¡Œå·ï¼‰%s\n", file);
+	//è¯æ³•åˆ†æžç¨‹åº
 	getToken();
 	int a;
-	printf("\n\n\nÇëÑ¡Ôñ¹¦ÄÜ£º\n1¡¢´Ê·¨·ÖÎötokenÐòÁÐ\n2¡¢Óï·¨·ÖÎöµÝ¹éÏÂ½µ\n3¡¢Óï·¨·ÖÎöLL1\n4¡¢ÓïÒå·ÖÎö´íÎóÊä³öÒÔ¼°·ûºÅ±í´òÓ¡\n0:ÍË³ö\n");
-	printf("ÇëÊäÈëÒªÑ¡ÔñµÄ¹¦ÄÜ¼ü£º\n");
+	printf("\n\n\nè¯·é€‰æ‹©åŠŸèƒ½ï¼š\n1ã€è¯æ³•åˆ†æžtokenåºåˆ—\n2ã€è¯­æ³•åˆ†æžé€’å½’ä¸‹é™\n3ã€è¯­æ³•åˆ†æžLL1\n4ã€è¯­ä¹‰åˆ†æžé”™è¯¯è¾“å‡ºä»¥åŠç¬¦å·è¡¨æ‰“å°\n0:é€€å‡º\n");
+	printf("è¯·è¾“å…¥è¦é€‰æ‹©çš„åŠŸèƒ½é”®ï¼š\n");
 	scanf("%d", &a);
 	while (true)
 	{
 		if (a == 1)
 		{
-			printf("TokenÐòÁÐ:\n\n");
+			printf("Tokenåºåˆ—:\n\n");
 			printTokenlist();
-			//ÊÍ·ÅÁ´±í
+			//é‡Šæ”¾é“¾è¡¨
 
 		}
 		else if (a == 2)
 		{
 			TreeNode * syntaxTree;
-			fprintf(listing, "\nÓï·¨·ÖÎö:\n");
+			fprintf(listing, "\nè¯­æ³•åˆ†æž:\n");
 			syntaxTree = parse();
-			fprintf(listing, "\nÓï·¨Ê÷:\n\n");
+			fprintf(listing, "\nè¯­æ³•æ ‘:\n\n");
 			printTree(syntaxTree);
-			Free_Tree(syntaxTree);//ÊÍ·ÅÕû¿ÃÊ÷
+			Free_Tree(syntaxTree);//é‡Šæ”¾æ•´æ£µæ ‘
 			fpnum = 0;
 		}
 		else if (a == 3)
 		{
 			/*****************************/
-			//Óï·¨·ÖÎöLL1
+			//è¯­æ³•åˆ†æžLL1
 			/*****************************/
-			fprintf(listing, "¾´ÇëÆÚ´ý£¡£¡£¡\n");
+			fprintf(listing, "æ•¬è¯·æœŸå¾…ï¼ï¼ï¼\n");
 		}
 		else if (a == 4)
 		{
 			TreeNode*syntaxTree;
 			syntaxTree = parse();
-			fprintf(listing, "\nÓïÒå·ÖÎö£º\n");
-			fprintf(listing, "\n¼ì²éÓïÒå´íÎó¡­¡­\n");
+			fprintf(listing, "\nè¯­ä¹‰åˆ†æžï¼š\n");
+			fprintf(listing, "\næ£€æŸ¥è¯­ä¹‰é”™è¯¯â€¦â€¦\n");
 			analyze(syntaxTree);
 			if (!Error)
-				fprintf(listing, "\nÎÞ´íÎó£¡£¡£¡\n");
+				fprintf(listing, "\næ— é”™è¯¯ï¼ï¼ï¼\n");
 			fpnum = 0;
-			fprintf(listing, "ÊÇ·ñ´òÓ¡ËùÉú³ÉµÄ·ûºÅ±í£¿£¿£¿£¿\n1:ÊÇ/0:²»ÊÇ  \n");
+			fprintf(listing, "æ˜¯å¦æ‰“å°æ‰€ç”Ÿæˆçš„ç¬¦å·è¡¨ï¼Ÿï¼Ÿï¼Ÿï¼Ÿ\n1:æ˜¯/0:ä¸æ˜¯  \n");
 			int b;
 			scanf("%d", &b);
 			if ( b ==1)
@@ -3414,11 +3412,11 @@ int main()
 		}
 		else if (a == 0)
 		{
-			fprintf(listing, "\n³ÌÐòÒÑÍË³ö!!!!");
+			fprintf(listing, "\nç¨‹åºå·²é€€å‡º!!!!");
 			exit(1);
 		}
-		printf("\n\n\nÇëÑ¡Ôñ¹¦ÄÜ£º\n1¡¢´Ê·¨·ÖÎötokenÐòÁÐ\n2¡¢Óï·¨·ÖÎöµÝ¹éÏÂ½µ\n3¡¢Óï·¨·ÖÎöLL1\n4¡¢ÓïÒå·ÖÎö´íÎóÊä³öÒÔ¼°·ûºÅ±í´òÓ¡\n0:ÍË³ö\n");
-		printf("ÇëÊäÈëÒªÑ¡ÔñµÄ¹¦ÄÜ¼ü£º\n");
+		printf("\n\n\nè¯·é€‰æ‹©åŠŸèƒ½ï¼š\n1ã€è¯æ³•åˆ†æžtokenåºåˆ—\n2ã€è¯­æ³•åˆ†æžé€’å½’ä¸‹é™\n3ã€è¯­æ³•åˆ†æžLL1\n4ã€è¯­ä¹‰åˆ†æžé”™è¯¯è¾“å‡ºä»¥åŠç¬¦å·è¡¨æ‰“å°\n0:é€€å‡º\n");
+		printf("è¯·è¾“å…¥è¦é€‰æ‹©çš„åŠŸèƒ½é”®ï¼š\n");
 		scanf("%d", &a);
 
 	}
