@@ -2,33 +2,33 @@
 #define _CRT_SECURE_NO_WARNINGS
 #pragma once
 #include"stdio.h"
-#include"stdlib.h"//Í·ÎÄ¼ş
+#include"stdlib.h"//å¤´æ–‡ä»¶
 #include<string.h>
 #ifndef FALSE
 #define FALSE 0
-#endif//³£Á¿false
+#endif//å¸¸é‡false
 #ifndef TRUE
 #define TRUE 1
-#endif //³£Á¿true
+#endif //å¸¸é‡true
 FILE*fp;
 
 /*********************************************/
-//                 ´Ê·¨·ÖÎö
+//                 è¯æ³•åˆ†æ
 /*********************************************/
 
 
-#define maxbaoliu 21//±£Áô×ÖµÄ×î´óÊıÁ¿
-#define maxtokenlenhth 40//µ¥´Ê×î´ó³¤¶È¶¨ÒåÎª40
-#define tokenlength sizeof(TokenType)//token³¤¶È
-#define chainnodelenghth sizeof(ChainNodeType)//Á´±í½Úµã³¤¶È
-static int Error = FALSE;//´íÎó×·×Ù±êÖ¾
-FILE*source;//Ô´ÎÄ¼ş
-FILE*listing;//ÁĞ±íÊä³öÎÄ¼ş
-static int Tokennum = 0;//token×ÜÊıÄ¿³õÊ¼»¯Îª0
+#define maxbaoliu 21//ä¿ç•™å­—çš„æœ€å¤§æ•°é‡
+#define maxtokenlenhth 40//å•è¯æœ€å¤§é•¿åº¦å®šä¹‰ä¸º40
+#define tokenlength sizeof(TokenType)//tokené•¿åº¦
+#define chainnodelenghth sizeof(ChainNodeType)//é“¾è¡¨èŠ‚ç‚¹é•¿åº¦
+static int Error = FALSE;//é”™è¯¯è¿½è¸ªæ ‡å¿—
+FILE*source;//æºæ–‡ä»¶
+FILE*listing;//åˆ—è¡¨è¾“å‡ºæ–‡ä»¶
+static int Tokennum = 0;//tokenæ€»æ•°ç›®åˆå§‹åŒ–ä¸º0
 
-static int lineno = 0;//Ô´ÎÄ¼ş´úÂëµÄĞĞºÅ
+static int lineno = 0;//æºæ–‡ä»¶ä»£ç çš„è¡Œå·
 static int linelinshi = 0;
-int savedOff = 0;//¼ÇÂ¼µ±Ç°²ãµÄdisplayoff
+int savedOff = 0;//è®°å½•å½“å‰å±‚çš„displayoff
 #pragma once
 typedef enum
 {
@@ -40,154 +40,154 @@ typedef enum
 	ENDWH, BEGIN, END, READ, WRITE,
 	ARRAY, OF, RECORD, RETURN, INTEGER, CHAR, ID, INTC, CHARC,
 }WordType;
-//µ¥´ÊÀàĞÍ£¨´Ê·¨ºÍÓïÒå£©
+//å•è¯ç±»å‹ï¼ˆè¯æ³•å’Œè¯­ä¹‰ï¼‰
 typedef struct tokenType
 {
 	int lineshow;
 	WordType Word;
 	char Mean[41];
 }TokenType;
-//Á´±í½ÚµãÀàĞÍ
+//é“¾è¡¨èŠ‚ç‚¹ç±»å‹
 typedef struct node
 {
-	TokenType Token;//µ¥´Ê
-	struct node* nextToken;//Ö¸ÏòÏÂÒ»¸öµ¥´ÊµÄÖ¸Õë
+	TokenType Token;//å•è¯
+	struct node* nextToken;//æŒ‡å‘ä¸‹ä¸€ä¸ªå•è¯çš„æŒ‡é’ˆ
 }ChainNodeType;
 
 /*******************************************/
-//Óï·¨·ÖÎö
+//è¯­æ³•åˆ†æ
 /*******************************************/
 
 
-//Óï·¨·ÖÎöÊ÷µÄ¸÷¸ö½ÚµãµÄÀàĞÍ
+//è¯­æ³•åˆ†ææ ‘çš„å„ä¸ªèŠ‚ç‚¹çš„ç±»å‹
 /*
-Ê÷¸ù£ºPro ³ÌĞòÍ·£ºProHead ÉùÃ÷ÀàĞÍ£ºDec ×Ó½áµã¶¼ÊÇÀàĞÍÉùÃ÷£ºType ×Ó½áµã¶¼ÊÇ±äÁ¿ÉùÃ÷£ºVar
-º¯ÊıÉùÃ÷£ºFuncDec Óï¾äĞòÁĞ£ºStmL  Óï¾äÉùÃ÷£ºStmt ±í´ïÊ½£ºExp
+æ ‘æ ¹ï¼šPro ç¨‹åºå¤´ï¼šProHead å£°æ˜ç±»å‹ï¼šDec å­ç»“ç‚¹éƒ½æ˜¯ç±»å‹å£°æ˜ï¼šType å­ç»“ç‚¹éƒ½æ˜¯å˜é‡å£°æ˜ï¼šVar
+å‡½æ•°å£°æ˜ï¼šFuncDec è¯­å¥åºåˆ—ï¼šStmL  è¯­å¥å£°æ˜ï¼šStmt è¡¨è¾¾å¼ï¼šExp
 */
 typedef enum {
 	Pro, ProHead, Dec, Type, Var, FuncDec, StmL, Stmt, Exp
 }TreeTypeKind;
-//ÉùÃ÷µÄÀàĞÍ·ÖÀà
+//å£°æ˜çš„ç±»å‹åˆ†ç±»
 /*
-Êı×éÀàĞÍArray£¬×Ö·ûÀàĞÍChar£¬ÕûÊıÀàĞÍInteger£¬¼ÇÂ¼ÀàĞÍRecord£¬ÀàĞÍ±êÊ¶·û×÷ÎªÀàĞÍ£ºId
+æ•°ç»„ç±»å‹Arrayï¼Œå­—ç¬¦ç±»å‹Charï¼Œæ•´æ•°ç±»å‹Integerï¼Œè®°å½•ç±»å‹Recordï¼Œç±»å‹æ ‡è¯†ç¬¦ä½œä¸ºç±»å‹ï¼šId
 */
 typedef enum {
 	Array, Char, Integer, Record, Id
 }DeclareKind;
 /*
-Óï¾äÀàĞÍ£ºÅĞ¶ÏIf Ñ­»·While ¸³ÖµAssign ¶ÁRead Ğ´Write µ÷ÓÃº¯ÊıCall£¬·µ»ØÀàĞÍReturn
+è¯­å¥ç±»å‹ï¼šåˆ¤æ–­If å¾ªç¯While èµ‹å€¼Assign è¯»Read å†™Write è°ƒç”¨å‡½æ•°Callï¼Œè¿”å›ç±»å‹Return
 */
 typedef enum {
 	If, While, Assign, Read, Write, Call, Return
 }SentenceKind;
 /*
-±í´ïÊ½ÀàĞÍ£º²Ù×÷Op£¬³£ÊıConst£¬±äÁ¿Var£¬
+è¡¨è¾¾å¼ç±»å‹ï¼šæ“ä½œOpï¼Œå¸¸æ•°Constï¼Œå˜é‡Varï¼Œ
 */
 typedef enum {
 	Op, Const, VarType
 }ExceptionKind;
-//±äÁ¿ÀàĞÍ ±êÊ¶·ûId Êı×é³ÉÔ±ArrayMember£¬Óò³ÉÔ±FieldMember
+//å˜é‡ç±»å‹ æ ‡è¯†ç¬¦Id æ•°ç»„æˆå‘˜ArrayMemberï¼ŒåŸŸæˆå‘˜FieldMember
 typedef enum {
 	Identifier, ArrayMember, FieldMember
 }VarKind;
-//¼ì²éÀàĞÍ ¿ÕVoid ÕûĞÍInteger ²¼¶ûÀàĞÍBoolean
+//æ£€æŸ¥ç±»å‹ ç©ºVoid æ•´å‹Integer å¸ƒå°”ç±»å‹Boolean
 typedef enum {
 	Void, INTEger, Boolean
 }ExpKind;
-//²ÎÊıÀàĞÍ ParamType Öµ²ÎVal ±ä²ÎVarpa
+//å‚æ•°ç±»å‹ ParamType å€¼å‚Val å˜å‚Varpa
 typedef enum {
 	Val, Varpa
 }ParamType;
 
-//Óï·¨·ÖÎöÊ÷
+//è¯­æ³•åˆ†ææ ‘
 typedef struct TreeNode
 {
-	struct TreeNode*treechild[3];//Óï·¨Êé½ÚµãµÄ×î´ó×Ó½ÚµãÊıÎª3£¬¹ı³ÌÉùÃ÷µÄ×Ó½áµã0Ö¸Ïò²ÎÊı²¿·Ö£¬1Ö¸ÏòÉùÃ÷Ìå²¿·Ö£¬2Ö¸Ïòº¯ÊıÓï¾ä²¿·Ö
-	struct TreeNode*brother;//ĞÖµÜ½Úµã
-	int noline;//Ô´´úÂëĞĞºÅ
-	TreeTypeKind nodekind;//½ÚµãÀàĞÍ
+	struct TreeNode*treechild[3];//è¯­æ³•ä¹¦èŠ‚ç‚¹çš„æœ€å¤§å­èŠ‚ç‚¹æ•°ä¸º3ï¼Œè¿‡ç¨‹å£°æ˜çš„å­ç»“ç‚¹0æŒ‡å‘å‚æ•°éƒ¨åˆ†ï¼Œ1æŒ‡å‘å£°æ˜ä½“éƒ¨åˆ†ï¼Œ2æŒ‡å‘å‡½æ•°è¯­å¥éƒ¨åˆ†
+	struct TreeNode*brother;//å…„å¼ŸèŠ‚ç‚¹
+	int noline;//æºä»£ç è¡Œå·
+	TreeTypeKind nodekind;//èŠ‚ç‚¹ç±»å‹
 	union
 	{
 		DeclareKind dec;
 		SentenceKind stmt;
 		ExceptionKind exp;
-	}kind;//¾ßÌåµÄÀàĞÍ
-	int samenum;//ÏàÍ¬ÀàĞÍµÄ±äÁ¿¸öÊı
-	char name[10][10];//±êÊ¶·ûµÄÃû³Æ
-	struct symbtable * table[10]; /* Óë±êÖ¾·û¶ÔÓ¦µÄ·ûºÅ±íµØÖ·£¬ÔÚÓïÒå·ÖÎö½×¶ÎÌîÈë*/
+	}kind;//å…·ä½“çš„ç±»å‹
+	int samenum;//ç›¸åŒç±»å‹çš„å˜é‡ä¸ªæ•°
+	char name[10][10];//æ ‡è¯†ç¬¦çš„åç§°
+	struct symbtable * table[10]; /* ä¸æ ‡å¿—ç¬¦å¯¹åº”çš„ç¬¦å·è¡¨åœ°å€ï¼Œåœ¨è¯­ä¹‰åˆ†æé˜¶æ®µå¡«å…¥*/
 	struct
 	{
 		struct {
-			int low;//Êı×éÏÂ½ç
-			int up;//Êı×éÉÏ½ç
-			DeclareKind childtype;//Êı×éµÄ×ÓÀàĞÍ
-		}ArrayFigure;//Êı×éÊôĞÔ
+			int low;//æ•°ç»„ä¸‹ç•Œ
+			int up;//æ•°ç»„ä¸Šç•Œ
+			DeclareKind childtype;//æ•°ç»„çš„å­ç±»å‹
+		}ArrayFigure;//æ•°ç»„å±æ€§
 		struct {
-			ParamType paramtype;//¹ı³ÌµÄ²ÎÊıÀàĞÍ
-		}ProcFigure;//¹ı³ÌÊôĞÔ
+			ParamType paramtype;//è¿‡ç¨‹çš„å‚æ•°ç±»å‹
+		}ProcFigure;//è¿‡ç¨‹å±æ€§
 		struct {
-			WordType op;//±í´ïÊ½µÄ²Ù×÷·û
-			int value;//±í´ïÊ½µÄÖµ
-			VarKind varkind;//±äÁ¿µÄÀà±ğ
-			ExpKind type;//¼ì²éÀàĞÍ
-		}ExceptionFigure;//±í´ïÊ½ÊôĞÔ
-		char typeName[10];//ÀàĞÍÃûÊÇ±êÊ¶·û
-	}Figure;//ÊôĞÔ
+			WordType op;//è¡¨è¾¾å¼çš„æ“ä½œç¬¦
+			int value;//è¡¨è¾¾å¼çš„å€¼
+			VarKind varkind;//å˜é‡çš„ç±»åˆ«
+			ExpKind type;//æ£€æŸ¥ç±»å‹
+		}ExceptionFigure;//è¡¨è¾¾å¼å±æ€§
+		char typeName[10];//ç±»å‹åæ˜¯æ ‡è¯†ç¬¦
+	}Figure;//å±æ€§
 
 }TreeNoder;
 
 
 
 /*************************************************/
-//ÓïÒå·ÖÎö
+//è¯­ä¹‰åˆ†æ
 /*************************************************/
 
 
 
-//±êÊ¶·ûµÄÀàĞÍ
+//æ ‡è¯†ç¬¦çš„ç±»å‹
 typedef enum
 {
 	typeKind, varKind, procKind
 }Idkind;
-//±äÁ¿µÄÀà±ğ
+//å˜é‡çš„ç±»åˆ«
 typedef enum
 {
 	dir, indir
 }AccessKind;
-//ĞÎ²Î±íµÄ½á¹¹¶¨Òå
+//å½¢å‚è¡¨çš„ç»“æ„å®šä¹‰
 typedef struct paramTable
 {
-	struct symbtable *entry;//Ö¸ÏòĞÎ²ÎËùÔÚ·ûºÅ±íÖĞµÄµØÖ·Èë¿Ú
+	struct symbtable *entry;//æŒ‡å‘å½¢å‚æ‰€åœ¨ç¬¦å·è¡¨ä¸­çš„åœ°å€å…¥å£
 	struct paramTable *next;
 }ParamTable;
-//±êÊ¶·ûµÄÊôĞÔ½á¹¹¶¨Òå
+//æ ‡è¯†ç¬¦çš„å±æ€§ç»“æ„å®šä¹‰
 typedef struct
 {
-	struct typeIR*idtype;//Ö¸Ïò±êÊ¶·ûµÄÀàĞÍÄÚ²¿±íÊ¾
-	Idkind kind;//±êÊ¶·ûµÄÀàĞÍ
+	struct typeIR*idtype;//æŒ‡å‘æ ‡è¯†ç¬¦çš„ç±»å‹å†…éƒ¨è¡¨ç¤º
+	Idkind kind;//æ ‡è¯†ç¬¦çš„ç±»å‹
 	union
 	{
 		struct
 		{
-			AccessKind access;//ÅĞ¶ÏÊÇ±ä²Î»¹ÊÇÊµ²Î
-			int level;//²ãÊı
-			int off;//Æ«ÒÆ
-			bool isParam;//ÅĞ¶ÏÊÇ²ÎÊı»¹ÊÇÆÕÍ¨±äÁ¿//	
-		}VarFigure;//±äÁ¿±êÊ¶·ûµÄÊôĞÔ
+			AccessKind access;//åˆ¤æ–­æ˜¯å˜å‚è¿˜æ˜¯å®å‚
+			int level;//å±‚æ•°
+			int off;//åç§»
+			bool isParam;//åˆ¤æ–­æ˜¯å‚æ•°è¿˜æ˜¯æ™®é€šå˜é‡//	
+		}VarFigure;//å˜é‡æ ‡è¯†ç¬¦çš„å±æ€§
 		struct
 		{
-			int level;//¹ı³ÌµÄ²ãÊı
-			ParamTable *param;//²ÎÊı±í
-			int moff;//¹ı³Ì»î¶¯¼ÇÂ¼µÄ´óĞ¡
-			int noff;//spµ½display±íµÄÆ«ÒÆÁ¿
-			int procEntry;//¹ı³ÌÈë¿ÚµØÖ·
-		}ProcFigure;//¹ı³ÌÃû±êÊ¶·ûµÄÊôĞÔ
-	}Random;//±êÊ¶·ûµÄ²»Í¬ÀàĞÍÓĞ²»Í¬µÄÊôĞÔ
+			int level;//è¿‡ç¨‹çš„å±‚æ•°
+			ParamTable *param;//å‚æ•°è¡¨
+			int moff;//è¿‡ç¨‹æ´»åŠ¨è®°å½•çš„å¤§å°
+			int noff;//spåˆ°displayè¡¨çš„åç§»é‡
+			int procEntry;//è¿‡ç¨‹å…¥å£åœ°å€
+		}ProcFigure;//è¿‡ç¨‹åæ ‡è¯†ç¬¦çš„å±æ€§
+	}Random;//æ ‡è¯†ç¬¦çš„ä¸åŒç±»å‹æœ‰ä¸åŒçš„å±æ€§
 }IDfigure;
 
 
 
-/*·ûºÅ±íµÄ½á¹¹¶¨Òå*/
+/*ç¬¦å·è¡¨çš„ç»“æ„å®šä¹‰*/
 typedef struct  symbtable
 {
 	char  idName[10];
@@ -195,52 +195,52 @@ typedef struct  symbtable
 	struct symbtable  *  next;
 
 }SymbTable;
-//ÀàĞÍÄÚ²¿±íÊ¾
-//Ã¶¾Ù¶¨Òå
+//ç±»å‹å†…éƒ¨è¡¨ç¤º
+//æšä¸¾å®šä¹‰
 typedef enum {
 	intTy, charTy, arrayTy, recordTy, boolTy
 }TypeKind;
-//ÓòÀàĞÍµ¥Ôª½á¹¹¶¨Òå
+//åŸŸç±»å‹å•å…ƒç»“æ„å®šä¹‰
 typedef struct fieldchain
 {
-	char id[10];//±äÁ¿Ãû
-	int off;//ËùÔÚ¼ÇÂ¼ÖĞµÄÆ«ÒÆ
-	struct typeIR*UnitType;//ÓòÖĞ³ÉÔ±µÄÀàĞÍ
+	char id[10];//å˜é‡å
+	int off;//æ‰€åœ¨è®°å½•ä¸­çš„åç§»
+	struct typeIR*UnitType;//åŸŸä¸­æˆå‘˜çš„ç±»å‹
 	struct fieldchain *next;
 
 }fieldChain;
 
 /*
- ÀàĞÍÄÚ²¿½á¹¹ÖĞµÄµÚÒ»¸ö³É·ÖÊÇÀàĞÍ´óĞ¡µÄĞÅÏ¢£¬µÚ¶ş¸ö³É·ÖÊÇ¾ßÌå
-ÀàĞÍ¡£ÆäËûĞÅÏ¢µÄÄÚÈİËæÀàĞÍ²»Í¬¶ø²»Í¬¡£¿ÉÓÃÏÂÁĞÍ³Ò»µÄÊı¾İ½á¹¹ÃèÊö£º
+ ç±»å‹å†…éƒ¨ç»“æ„ä¸­çš„ç¬¬ä¸€ä¸ªæˆåˆ†æ˜¯ç±»å‹å¤§å°çš„ä¿¡æ¯ï¼Œç¬¬äºŒä¸ªæˆåˆ†æ˜¯å…·ä½“
+ç±»å‹ã€‚å…¶ä»–ä¿¡æ¯çš„å†…å®¹éšç±»å‹ä¸åŒè€Œä¸åŒã€‚å¯ç”¨ä¸‹åˆ—ç»Ÿä¸€çš„æ•°æ®ç»“æ„æè¿°ï¼š
 */
 typedef struct typeIR
 {
-	int size;//ÀàĞÍËùÕ¼¿Õ¼ä´óĞ¡
-	TypeKind kind;
+	int size;//ç±»å‹æ‰€å ç©ºé—´å¤§å°
+	TypeKind kind;//æ ‡è¯†ç¬¦çš„ç±»å‹
 	union
 	{
 		struct
 		{
 			struct typeIR*indexTy;
 			struct typeIR*elemTy;
-			int low;//¼ÇÂ¼Êı×éÀàĞÍµÄÏÂ½ç
-			int up;//¼ÇÂ¼Êı×éÀàĞÍµÄÉÌ½ç
+			int low;//è®°å½•æ•°ç»„ç±»å‹çš„ä¸‹ç•Œ
+			int up;//è®°å½•æ•°ç»„ç±»å‹çš„å•†ç•Œ
 		}ArrayFigure;
-		fieldChain*body;//¼ÇÂ¼ÀàĞÍÖĞµÄÓòÁ´
+		fieldChain*body;//è®°å½•ç±»å‹ä¸­çš„åŸŸé“¾
 	}More;
 }TypeIR;
-//scopeÕ»µÄ²ãÊı
+//scopeæ ˆçš„å±‚æ•°
 int Level = -1;
-//ÔÚÍ¬²ãµÄ±äÁ¿Æ«ÒÆ
+//åœ¨åŒå±‚çš„å˜é‡åç§»
 int Off;
-//ÔÚÖ÷³ÌĞòµÄoffÆ«ÒÆ
+//åœ¨ä¸»ç¨‹åºçš„offåç§»
 int mainoff;
 
-SymbTable *scope[1000];//scopeÕ»
-TypeIR *intPtr = NULL;//¸ÃÖ¸ÕëÊ¼ÖÕÖ¸ÏòÕûÊıÀàĞÍµÄÄÚ²¿±íÊ¾
-TypeIR*charPtr = NULL;//¸ÃÖ¸ÕëÊ¼ÖÕÖ¸Ïò×Ö·ûÀàĞÍµÄÄÚ²¿±íÊ¾
-TypeIR*boolPtr = NULL;//¸ÃÖ¸ÕëÊ¼ÖÕÖ¸Ïò²¼¶ûÀàĞÍµÄÄÚ²¿±íÊ¾
+SymbTable *scope[1000];//scopeæ ˆ
+TypeIR *intPtr = NULL;//è¯¥æŒ‡é’ˆå§‹ç»ˆæŒ‡å‘æ•´æ•°ç±»å‹çš„å†…éƒ¨è¡¨ç¤º
+TypeIR*charPtr = NULL;//è¯¥æŒ‡é’ˆå§‹ç»ˆæŒ‡å‘å­—ç¬¦ç±»å‹çš„å†…éƒ¨è¡¨ç¤º
+TypeIR*boolPtr = NULL;//è¯¥æŒ‡é’ˆå§‹ç»ˆæŒ‡å‘å¸ƒå°”ç±»å‹çš„å†…éƒ¨è¡¨ç¤º
 static TypeIR*arrayVar(TreeNode*t);
 static TypeIR*recordVar(TreeNode*t);
 static TypeIR*arrayVar(TreeNode*t);
@@ -262,41 +262,41 @@ static void VarDecPart(TreeNode*t);
 
 
 /*************************************************/
-//               Óï·¨·ÖÎö£¨µİ¹éÏÂ½µ·ÖÎö³ÌĞò£©
+//               è¯­æ³•åˆ†æï¼ˆé€’å½’ä¸‹é™åˆ†æç¨‹åºï¼‰
 /*************************************************/
 
 
-// ¹¦  ÄÜ ´´½¨º¯ÊıÀàĞÍÓï·¨Ê÷½Úµãº¯Êı					
-// Ëµ  Ã÷ ¸Ãº¯ÊıÎªÓï·¨Ê÷´´½¨Ò»¸öĞÂµÄº¯ÊıÀàĞÍ½áµã		
-//        ²¢½«Óï·¨Ê÷½Úµã³ÉÔ±³õÊ¼»¯						
+// åŠŸ  èƒ½ åˆ›å»ºå‡½æ•°ç±»å‹è¯­æ³•æ ‘èŠ‚ç‚¹å‡½æ•°					
+// è¯´  æ˜ è¯¥å‡½æ•°ä¸ºè¯­æ³•æ ‘åˆ›å»ºä¸€ä¸ªæ–°çš„å‡½æ•°ç±»å‹ç»“ç‚¹		
+//        å¹¶å°†è¯­æ³•æ ‘èŠ‚ç‚¹æˆå‘˜åˆå§‹åŒ–						
 TreeNode * newProcNode()
 
 {
-	/* ÔÚÄÚ´æÖĞ¶¯Ì¬ÉêÇë·ÖÅäµ¥Ôª£¬·µ»ØÖ¸Ïò¸Ãµ¥ÔªµÄÓï·¨Ê÷½áµãÀàĞÍÖ¸Õët */
+	/* åœ¨å†…å­˜ä¸­åŠ¨æ€ç”³è¯·åˆ†é…å•å…ƒï¼Œè¿”å›æŒ‡å‘è¯¥å•å…ƒçš„è¯­æ³•æ ‘ç»“ç‚¹ç±»å‹æŒ‡é’ˆt */
 	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
 	int i;
 
-	/* Óï·¨Ê÷½ÚµãÖ¸ÕëtÎªNULL,Î´ÄÜ³É¹¦·ÖÅäÄÚ´æµ¥Ôª *
-	 * ½«³ö´íĞÅÏ¢¼°ĞĞºÅlinenoĞ´ÈëÁĞ±íÎÄ¼şlisting  */
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸ºNULL,æœªèƒ½æˆåŠŸåˆ†é…å†…å­˜å•å…ƒ *
+	 * å°†å‡ºé”™ä¿¡æ¯åŠè¡Œå·linenoå†™å…¥åˆ—è¡¨æ–‡ä»¶listing  */
 	if (t == NULL)
 	{
 		fprintf(listing, "Out of memory error at line %d\n", lineno);
 		Error = TRUE;
 	}
-	/* Óï·¨Ê÷½ÚµãÖ¸Õët²»ÊÇNULL,³É¹¦·ÖÅäÄÚ´æµ¥Ôª */
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸æ˜¯NULL,æˆåŠŸåˆ†é…å†…å­˜å•å…ƒ */
 	else {
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½Úµãt¸÷×Ó½Úµãchild[i]ÎªNULL */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå„å­èŠ‚ç‚¹child[i]ä¸ºNULL */
 		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½ÚµãtĞÖµÜ½ÚµãsiblingÎªNULL */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå…„å¼ŸèŠ‚ç‚¹siblingä¸ºNULL */
 		t->brother = NULL;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±:½áµãÀàĞÍnodekindÎªÓï¾äÀàĞÍProcDecK */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜:ç»“ç‚¹ç±»å‹nodekindä¸ºè¯­å¥ç±»å‹ProcDecK */
 		t->nodekind = FuncDec;
 
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±:Ô´´úÂëĞĞºÅlinelinshiÎªÈ«¾Ö±äÁ¿lineno */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜:æºä»£ç è¡Œå·linelinshiä¸ºå…¨å±€å˜é‡lineno */
 		t->noline = linelinshi;
 
 		t->samenum = 0;
@@ -308,132 +308,132 @@ TreeNode * newProcNode()
 		}
 
 	}
-	/* º¯Êı·µ»ØÓï¾äÀàĞÍÓï·¨Ê÷½ÚµãÖ¸Õët */
+	/* å‡½æ•°è¿”å›è¯­å¥ç±»å‹è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆt */
 	return t;
 }
 
-// ¹¦  ÄÜ ÀàĞÍ±êÖ¾Óï·¨Ê÷½Úµã´´½¨º¯Êı					
-// Ëµ  Ã÷ ¸Ãº¯ÊıÎªÓï·¨Ê÷´´½¨Ò»¸öĞÂµÄÀàĞÍ±êÖ¾½áµã£¬      
-//       ±íÊ¾ÔÚËüÖ®ÏÂµÄÉùÃ÷¶¼ÎªÀàĞÍÉùÃ÷£¬        		
-//        ²¢½«Óï·¨Ê÷½ÚµãµÄ³ÉÔ±³õÊ¼»¯					
+// åŠŸ  èƒ½ ç±»å‹æ ‡å¿—è¯­æ³•æ ‘èŠ‚ç‚¹åˆ›å»ºå‡½æ•°					
+// è¯´  æ˜ è¯¥å‡½æ•°ä¸ºè¯­æ³•æ ‘åˆ›å»ºä¸€ä¸ªæ–°çš„ç±»å‹æ ‡å¿—ç»“ç‚¹ï¼Œ      
+//       è¡¨ç¤ºåœ¨å®ƒä¹‹ä¸‹çš„å£°æ˜éƒ½ä¸ºç±»å‹å£°æ˜ï¼Œ        		
+//        å¹¶å°†è¯­æ³•æ ‘èŠ‚ç‚¹çš„æˆå‘˜åˆå§‹åŒ–					
 TreeNode * newTypeNode()
 
 {
-	/* ÄÚ´æÖĞ¶¯Ì¬ÉêÇë·ÖÅäµ¥Ôª£¬·µ»ØÖ¸Ïò¸Ãµ¥ÔªµÄÓï·¨Ê÷½ÚµãÀàĞÍÖ¸Õët */
+	/* å†…å­˜ä¸­åŠ¨æ€ç”³è¯·åˆ†é…å•å…ƒï¼Œè¿”å›æŒ‡å‘è¯¥å•å…ƒçš„è¯­æ³•æ ‘èŠ‚ç‚¹ç±»å‹æŒ‡é’ˆt */
 	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
 
 	int i;
 
-	/* Óï·¨Ê÷½ÚµãÖ¸ÕëtÎªNULL,Î´ÄÜ³É¹¦·ÖÅäÄÚ´æµ¥Ôª		*
-	 * ½«³ö´íĞÅÏ¢¼°ĞĞºÅlinenoĞ´ÈëÁĞ±íÎÄ¼şlisting		*/
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸ºNULL,æœªèƒ½æˆåŠŸåˆ†é…å†…å­˜å•å…ƒ		*
+	 * å°†å‡ºé”™ä¿¡æ¯åŠè¡Œå·linenoå†™å…¥åˆ—è¡¨æ–‡ä»¶listing		*/
 	if (t == NULL)
 		fprintf(listing, "Out of memory error at line %d\n", lineno);
 
-	/* Óï·¨Ê÷½ÚµãÖ¸Õët²»ÊÇNULL,ÄÚ´æµ¥ÔªÒÑ¾­³É¹¦·ÖÅä */
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸æ˜¯NULL,å†…å­˜å•å…ƒå·²ç»æˆåŠŸåˆ†é… */
 	else {
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½Úµãt¸÷×Ó½Úµãchild[i]ÎªNULL */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå„å­èŠ‚ç‚¹child[i]ä¸ºNULL */
 		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½ÚµãtĞÖµÜ½ÚµãsiblingÎªNULL(¿Õ) */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå…„å¼ŸèŠ‚ç‚¹siblingä¸ºNULL(ç©º) */
 		t->brother = NULL;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±: ½áµãÀàĞÍnodekindÎª±í´ïÊ½ÀàĞÍExpK */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜: ç»“ç‚¹ç±»å‹nodekindä¸ºè¡¨è¾¾å¼ç±»å‹ExpK */
 		t->nodekind = Type;
 
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±: Ô´´úÂëĞĞºÅlinelinshiÎªÈ«¾Ö±äÁ¿lineno */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜: æºä»£ç è¡Œå·linelinshiä¸ºå…¨å±€å˜é‡lineno */
 		t->noline = linelinshi;
 
 		t->samenum = 0;
-		/*³õÊ¼»¯·ûºÅ±íµØÖ·Ö¸Õë*/
+		/*åˆå§‹åŒ–ç¬¦å·è¡¨åœ°å€æŒ‡é’ˆ*/
 		for (int i = 0; i < 10; i++)
 			t->table[i] = NULL;
 
 	}
 
-	/* º¯Êı·µ»Ø±í´ïÊ½ÀàĞÍÓï·¨Ê÷½áµãÖ¸Õët */
+	/* å‡½æ•°è¿”å›è¡¨è¾¾å¼ç±»å‹è¯­æ³•æ ‘ç»“ç‚¹æŒ‡é’ˆt */
 	return t;
 }
 
 
-// º¯ÊıÃû newVarNode								
-// ¹¦  ÄÜ ±äÁ¿ÉùÃ÷±êÖ¾Óï·¨Ê÷½Úµã´´½¨º¯Êı				
-//Ëµ  Ã÷ ¸Ãº¯ÊıÎªÓï·¨Ê÷´´½¨Ò»¸öĞÂµÄ±äÁ¿ÉùÃ÷±êÖ¾½áµã£¬
-//        ±íÊ¾ÔÚËüÖ®ÏÂµÄÉùÃ÷¶¼Îª±äÁ¿ÉùÃ÷£¬           	
-//   ²¢½«Óï·¨Ê÷½ÚµãµÄ³ÉÔ±³õÊ¼»¯					
+// å‡½æ•°å newVarNode								
+// åŠŸ  èƒ½ å˜é‡å£°æ˜æ ‡å¿—è¯­æ³•æ ‘èŠ‚ç‚¹åˆ›å»ºå‡½æ•°				
+//è¯´  æ˜ è¯¥å‡½æ•°ä¸ºè¯­æ³•æ ‘åˆ›å»ºä¸€ä¸ªæ–°çš„å˜é‡å£°æ˜æ ‡å¿—ç»“ç‚¹ï¼Œ
+//        è¡¨ç¤ºåœ¨å®ƒä¹‹ä¸‹çš„å£°æ˜éƒ½ä¸ºå˜é‡å£°æ˜ï¼Œ           	
+//   å¹¶å°†è¯­æ³•æ ‘èŠ‚ç‚¹çš„æˆå‘˜åˆå§‹åŒ–					
 TreeNode * newVarNode()
 
 {
-	/* ÄÚ´æÖĞ¶¯Ì¬ÉêÇë·ÖÅäµ¥Ôª£¬·µ»ØÖ¸Ïò¸Ãµ¥ÔªµÄÓï·¨Ê÷½ÚµãÀàĞÍÖ¸Õët */
+	/* å†…å­˜ä¸­åŠ¨æ€ç”³è¯·åˆ†é…å•å…ƒï¼Œè¿”å›æŒ‡å‘è¯¥å•å…ƒçš„è¯­æ³•æ ‘èŠ‚ç‚¹ç±»å‹æŒ‡é’ˆt */
 	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
 
 	int i;
 
-	/* Óï·¨Ê÷½ÚµãÖ¸ÕëtÎªNULL,Î´ÄÜ³É¹¦·ÖÅäÄÚ´æµ¥Ôª		*
-	 * ½«³ö´íĞÅÏ¢¼°ĞĞºÅlinenoĞ´ÈëÁĞ±íÎÄ¼şlisting		*/
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸ºNULL,æœªèƒ½æˆåŠŸåˆ†é…å†…å­˜å•å…ƒ		*
+	 * å°†å‡ºé”™ä¿¡æ¯åŠè¡Œå·linenoå†™å…¥åˆ—è¡¨æ–‡ä»¶listing		*/
 	if (t == NULL)
 		fprintf(listing, "Out of memory error at line %d\n", lineno);
 
-	/* Óï·¨Ê÷½ÚµãÖ¸Õët²»ÊÇNULL,ÄÚ´æµ¥ÔªÒÑ¾­³É¹¦·ÖÅä */
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸æ˜¯NULL,å†…å­˜å•å…ƒå·²ç»æˆåŠŸåˆ†é… */
 	else {
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½Úµãt¸÷×Ó½Úµãchild[i]ÎªNULL */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå„å­èŠ‚ç‚¹child[i]ä¸ºNULL */
 		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½ÚµãtĞÖµÜ½ÚµãsiblingÎªNULL(¿Õ) */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå…„å¼ŸèŠ‚ç‚¹siblingä¸ºNULL(ç©º) */
 		t->brother = NULL;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±: ½áµãÀàĞÍnodekindÎª±í´ïÊ½ÀàĞÍExpK */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜: ç»“ç‚¹ç±»å‹nodekindä¸ºè¡¨è¾¾å¼ç±»å‹ExpK */
 		t->nodekind = Var;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±: Ô´´úÂëĞĞºÅlinelinshiÎªÈ«¾Ö±äÁ¿lineno */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜: æºä»£ç è¡Œå·linelinshiä¸ºå…¨å±€å˜é‡lineno */
 		t->noline = linelinshi;
 
 		t->samenum = 0;
-		/*³õÊ¼»¯·ûºÅ±íµØÖ·Ö¸Õë*/
+		/*åˆå§‹åŒ–ç¬¦å·è¡¨åœ°å€æŒ‡é’ˆ*/
 		for (int i = 0; i < 10; i++)
 		{
 			t->table[i] = NULL;
 		}
 	}
-	/* º¯Êı·µ»Ø±í´ïÊ½ÀàĞÍÓï·¨Ê÷½áµãÖ¸Õët */
+	/* å‡½æ•°è¿”å›è¡¨è¾¾å¼ç±»å‹è¯­æ³•æ ‘ç»“ç‚¹æŒ‡é’ˆt */
 	return t;
 }
-/* º¯ÊıÃû newDecANode									*/
-/* ¹¦  ÄÜ ´´½¨ÉùÃ÷Óï·¨Ê÷½Úµãº¯Êı,Ã»ÓĞÖ¸Ã÷¾ßÌåµÄ½ÚµãÉùÃ÷ */
-/*        ÀàĞÍ,ÔÚÓï·¨Ê÷µÄµÚ¶ş²ã			                */
-/* Ëµ  Ã÷ ¸Ãº¯ÊıÎªÓï·¨Ê÷´´½¨Ò»¸öĞÂµÄ½áµã      	     	*/
-/*        ²¢½«Óï·¨Ê÷½Úµã³ÉÔ±³õÊ¼»¯						*/
+/* å‡½æ•°å newDecANode									*/
+/* åŠŸ  èƒ½ åˆ›å»ºå£°æ˜è¯­æ³•æ ‘èŠ‚ç‚¹å‡½æ•°,æ²¡æœ‰æŒ‡æ˜å…·ä½“çš„èŠ‚ç‚¹å£°æ˜ */
+/*        ç±»å‹,åœ¨è¯­æ³•æ ‘çš„ç¬¬äºŒå±‚			                */
+/* è¯´  æ˜ è¯¥å‡½æ•°ä¸ºè¯­æ³•æ ‘åˆ›å»ºä¸€ä¸ªæ–°çš„ç»“ç‚¹      	     	*/
+/*        å¹¶å°†è¯­æ³•æ ‘èŠ‚ç‚¹æˆå‘˜åˆå§‹åŒ–						*/
 /********************************************************/
 TreeNode * newDecANode(TreeTypeKind kind)
 
 {
-	/* ÔÚÄÚ´æÖĞ¶¯Ì¬ÉêÇë·ÖÅäµ¥Ôª£¬·µ»ØÖ¸Ïò¸Ãµ¥ÔªµÄÓï·¨Ê÷½áµãÀàĞÍÖ¸Õët */
+	/* åœ¨å†…å­˜ä¸­åŠ¨æ€ç”³è¯·åˆ†é…å•å…ƒï¼Œè¿”å›æŒ‡å‘è¯¥å•å…ƒçš„è¯­æ³•æ ‘ç»“ç‚¹ç±»å‹æŒ‡é’ˆt */
 	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
 
 	int i;
 
-	/* Óï·¨Ê÷½ÚµãÖ¸ÕëtÎªNULL,Î´ÄÜ³É¹¦·ÖÅäÄÚ´æµ¥Ôª *
-	 * ½«³ö´íĞÅÏ¢¼°ĞĞºÅlinenoĞ´ÈëÁĞ±íÎÄ¼şlisting  */
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸ºNULL,æœªèƒ½æˆåŠŸåˆ†é…å†…å­˜å•å…ƒ *
+	 * å°†å‡ºé”™ä¿¡æ¯åŠè¡Œå·linenoå†™å…¥åˆ—è¡¨æ–‡ä»¶listing  */
 	if (t == NULL)
 	{
 		fprintf(listing, "Out of memory error at line %d\n", lineno);
 		Error = TRUE;
 	}
-	/* Óï·¨Ê÷½ÚµãÖ¸Õët²»ÊÇNULL,³É¹¦·ÖÅäÄÚ´æµ¥Ôª */
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸æ˜¯NULL,æˆåŠŸåˆ†é…å†…å­˜å•å…ƒ */
 	else {
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½Úµãt¸÷×Ó½Úµãchild[i]ÎªNULL */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå„å­èŠ‚ç‚¹child[i]ä¸ºNULL */
 		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½ÚµãtĞÖµÜ½ÚµãsiblingÎªNULL */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå…„å¼ŸèŠ‚ç‚¹siblingä¸ºNULL */
 		t->brother = NULL;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±:½áµãÀàĞÍnodekindÎª²ÎÊıkind */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜:ç»“ç‚¹ç±»å‹nodekindä¸ºå‚æ•°kind */
 		t->nodekind = kind;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±:Ô´´úÂëĞĞºÅlinelinshiÎªÈ«¾Ö±äÁ¿lineno */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜:æºä»£ç è¡Œå·linelinshiä¸ºå…¨å±€å˜é‡lineno */
 		t->noline = linelinshi;
 		t->samenum = 0;
 		for (i = 0; i < 10; i++)
@@ -442,19 +442,19 @@ TreeNode * newDecANode(TreeTypeKind kind)
 			t->table[i] = NULL;
 		}
 	}
-	/* º¯Êı·µ»ØÓï·¨Ê÷¸ù½ÚµãÖ¸Õët */
+	/* å‡½æ•°è¿”å›è¯­æ³•æ ‘æ ¹èŠ‚ç‚¹æŒ‡é’ˆt */
 	return t;
 }
-//´´½¨ĞÂµÄ³ÌĞò¸ù½Úµã
+//åˆ›å»ºæ–°çš„ç¨‹åºæ ¹èŠ‚ç‚¹
 TreeNode*newroot()
 {
 	TreeNode*t = (TreeNode*)malloc(sizeof(TreeNode));
 	for (int i = 0; i < 3; i++)
 	{
-		t->treechild[i] = NULL;//³õÊ¼»¯¸÷¸ö×Ó½áµã
+		t->treechild[i] = NULL;//åˆå§‹åŒ–å„ä¸ªå­ç»“ç‚¹
 	}
-	t->brother = NULL;//ĞÖµÜ½ÚµãÎªNULL
-	t->nodekind = Pro;//½ÚµãÀàĞÍÎªÓï¾äÀàĞÍ
+	t->brother = NULL;//å…„å¼ŸèŠ‚ç‚¹ä¸ºNULL
+	t->nodekind = Pro;//èŠ‚ç‚¹ç±»å‹ä¸ºè¯­å¥ç±»å‹
 	t->noline = 0;
 	t->samenum = 0;
 	for (int i = 0; i < 10; i++)
@@ -463,7 +463,7 @@ TreeNode*newroot()
 	}
 	return t;
 }
-//´´½¨ĞÂµÄ³ÌĞòÍ·½áµã,ÎªÓï·¨Ê÷´´½¨Ò»¸öĞÂµÄ³ÌĞòÍ·½áµã²¢½«Óï·¨Ê÷½Úµã³ÉÔ±³õÊ¼»¯
+//åˆ›å»ºæ–°çš„ç¨‹åºå¤´ç»“ç‚¹,ä¸ºè¯­æ³•æ ‘åˆ›å»ºä¸€ä¸ªæ–°çš„ç¨‹åºå¤´ç»“ç‚¹å¹¶å°†è¯­æ³•æ ‘èŠ‚ç‚¹æˆå‘˜åˆå§‹åŒ–
 
 TreeNode* newProhead()
 {
@@ -473,7 +473,7 @@ TreeNode* newProhead()
 		t->treechild[i] = NULL;
 	}
 	t->brother = NULL;
-	t->nodekind = ProHead;//Óï¾äÀàĞÍ
+	t->nodekind = ProHead;//è¯­å¥ç±»å‹
 	t->noline = linelinshi;
 	t->samenum = 0;
 	for (int i = 0; i < 10; i++)
@@ -483,7 +483,7 @@ TreeNode* newProhead()
 	return t;
 
 }
-//´´½¨ĞÂµÄÉùÃ÷²¿·ÖµÄ½Úµã
+//åˆ›å»ºæ–°çš„å£°æ˜éƒ¨åˆ†çš„èŠ‚ç‚¹
 TreeNode*newDecNode()
 {
 	TreeNode*t = (TreeNode*)malloc(sizeof(TreeNode));
@@ -493,7 +493,7 @@ TreeNode*newDecNode()
 		Error = TRUE;
 	}
 
-	/* Óï·¨Ê÷½ÚµãÖ¸Õët²»ÊÇNULL,³É¹¦·ÖÅäÄÚ´æµ¥Ôª */
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸æ˜¯NULL,æˆåŠŸåˆ†é…å†…å­˜å•å…ƒ */
 	else {
 		for (int i = 0; i < 3; i++)
 		{
@@ -512,36 +512,36 @@ TreeNode*newDecNode()
 	}
 	return t;
 }
-//¹¦  ÄÜ ´´½¨Óï¾ä±êÖ¾ÀàĞÍÓï·¨Ê÷½Úµãº¯Êı				
-// Ëµ  Ã÷ ¸Ãº¯ÊıÎªÓï·¨Ê÷´´½¨Ò»¸öĞÂµÄÓï¾ä±êÖ¾ÀàĞÍ½áµã	
-//       ²¢½«Óï·¨Ê÷½Úµã³ÉÔ±³õÊ¼»¯						
+//åŠŸ  èƒ½ åˆ›å»ºè¯­å¥æ ‡å¿—ç±»å‹è¯­æ³•æ ‘èŠ‚ç‚¹å‡½æ•°				
+// è¯´  æ˜ è¯¥å‡½æ•°ä¸ºè¯­æ³•æ ‘åˆ›å»ºä¸€ä¸ªæ–°çš„è¯­å¥æ ‡å¿—ç±»å‹ç»“ç‚¹	
+//       å¹¶å°†è¯­æ³•æ ‘èŠ‚ç‚¹æˆå‘˜åˆå§‹åŒ–						
 TreeNode * newSentenceBiaozhiNode()
 {
-	/* ÔÚÄÚ´æÖĞ¶¯Ì¬ÉêÇë·ÖÅäµ¥Ôª£¬·µ»ØÖ¸Ïò¸Ãµ¥ÔªµÄÓï·¨Ê÷½áµãÀàĞÍÖ¸Õët */
+	/* åœ¨å†…å­˜ä¸­åŠ¨æ€ç”³è¯·åˆ†é…å•å…ƒï¼Œè¿”å›æŒ‡å‘è¯¥å•å…ƒçš„è¯­æ³•æ ‘ç»“ç‚¹ç±»å‹æŒ‡é’ˆt */
 	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
 
 	int i;
 
-	/* Óï·¨Ê÷½ÚµãÖ¸ÕëtÎªNULL,Î´ÄÜ³É¹¦·ÖÅäÄÚ´æµ¥Ôª *
-	 * ½«³ö´íĞÅÏ¢¼°ĞĞºÅlinenoĞ´ÈëÁĞ±íÎÄ¼şlisting  */
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸ºNULL,æœªèƒ½æˆåŠŸåˆ†é…å†…å­˜å•å…ƒ *
+	 * å°†å‡ºé”™ä¿¡æ¯åŠè¡Œå·linenoå†™å…¥åˆ—è¡¨æ–‡ä»¶listing  */
 	if (t == NULL)
 	{
 		fprintf(listing, "Out of memory error at line %d\n", lineno);
 		Error = TRUE;
 	}
-	/* Óï·¨Ê÷½ÚµãÖ¸Õët²»ÊÇNULL,³É¹¦·ÖÅäÄÚ´æµ¥Ôª */
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸æ˜¯NULL,æˆåŠŸåˆ†é…å†…å­˜å•å…ƒ */
 	else {
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½Úµãt¸÷×Ó½Úµãchild[i]ÎªNULL */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå„å­èŠ‚ç‚¹child[i]ä¸ºNULL */
 		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½ÚµãtĞÖµÜ½ÚµãsiblingÎªNULL */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå…„å¼ŸèŠ‚ç‚¹siblingä¸ºNULL */
 		t->brother = NULL;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±:½áµãÀàĞÍnodekindÎªÓï¾äÀàĞÍStmLK */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜:ç»“ç‚¹ç±»å‹nodekindä¸ºè¯­å¥ç±»å‹StmLK */
 		t->nodekind = StmL;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±:Ô´´úÂëĞĞºÅlinelinshiÎªÈ«¾Ö±äÁ¿lineno */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜:æºä»£ç è¡Œå·linelinshiä¸ºå…¨å±€å˜é‡lineno */
 		t->noline = linelinshi;
 
 		t->samenum = 0;
@@ -553,41 +553,41 @@ TreeNode * newSentenceBiaozhiNode()
 		}
 
 	}
-	/*º¯Êı·µ»ØÓï¾äÀàĞÍÓï·¨Ê÷½ÚµãÖ¸Õët*/
+	/*å‡½æ•°è¿”å›è¯­å¥ç±»å‹è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆt*/
 	return t;
 }
 
-// ¹¦  ÄÜ ´´½¨Óï¾äÀàĞÍÓï·¨Ê÷½Úµãº¯Êı				
-// Ëµ  Ã÷ ¸Ãº¯ÊıÎªÓï·¨Ê÷´´½¨Ò»¸öĞÂµÄÓï¾ä±êÖ¾ÀàĞÍ½áµã	
-//        ²¢½«Óï·¨Ê÷½Úµã³ÉÔ±³õÊ¼»¯						
+// åŠŸ  èƒ½ åˆ›å»ºè¯­å¥ç±»å‹è¯­æ³•æ ‘èŠ‚ç‚¹å‡½æ•°				
+// è¯´  æ˜ è¯¥å‡½æ•°ä¸ºè¯­æ³•æ ‘åˆ›å»ºä¸€ä¸ªæ–°çš„è¯­å¥æ ‡å¿—ç±»å‹ç»“ç‚¹	
+//        å¹¶å°†è¯­æ³•æ ‘èŠ‚ç‚¹æˆå‘˜åˆå§‹åŒ–						
 TreeNode * newSentenceNode(SentenceKind kind)
 
 {
-	/* ÔÚÄÚ´æÖĞ¶¯Ì¬ÉêÇë·ÖÅäµ¥Ôª£¬·µ»ØÖ¸Ïò¸Ãµ¥ÔªµÄÓï·¨Ê÷½áµãÀàĞÍÖ¸Õët */
+	/* åœ¨å†…å­˜ä¸­åŠ¨æ€ç”³è¯·åˆ†é…å•å…ƒï¼Œè¿”å›æŒ‡å‘è¯¥å•å…ƒçš„è¯­æ³•æ ‘ç»“ç‚¹ç±»å‹æŒ‡é’ˆt */
 	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
 
 	int i;
 
-	/* Óï·¨Ê÷½ÚµãÖ¸ÕëtÎªNULL,Î´ÄÜ³É¹¦·ÖÅäÄÚ´æµ¥Ôª *
-	 * ½«³ö´íĞÅÏ¢¼°ĞĞºÅlinenoĞ´ÈëÁĞ±íÎÄ¼şlisting  */
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸ºNULL,æœªèƒ½æˆåŠŸåˆ†é…å†…å­˜å•å…ƒ *
+	 * å°†å‡ºé”™ä¿¡æ¯åŠè¡Œå·linenoå†™å…¥åˆ—è¡¨æ–‡ä»¶listing  */
 	if (t == NULL)
 	{
 		fprintf(listing, "Out of memory error at line %d\n", lineno);
 		Error = TRUE;
 	}
-	/* Óï·¨Ê÷½ÚµãÖ¸Õët²»ÊÇNULL,³É¹¦·ÖÅäÄÚ´æµ¥Ôª */
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸æ˜¯NULL,æˆåŠŸåˆ†é…å†…å­˜å•å…ƒ */
 	else {
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½Úµãt¸÷×Ó½Úµãchild[i]ÎªNULL */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå„å­èŠ‚ç‚¹child[i]ä¸ºNULL */
 		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½ÚµãtĞÖµÜ½ÚµãsiblingÎªNULL */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå…„å¼ŸèŠ‚ç‚¹siblingä¸ºNULL */
 		t->brother = NULL;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±:½áµãÀàĞÍnodekindÎªÓï¾äÀàĞÍStmLK */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜:ç»“ç‚¹ç±»å‹nodekindä¸ºè¯­å¥ç±»å‹StmLK */
 		t->nodekind = Stmt;
 		t->kind.stmt = kind;
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±:Ô´´úÂëĞĞºÅlinelinshiÎªÈ«¾Ö±äÁ¿lineno */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜:æºä»£ç è¡Œå·linelinshiä¸ºå…¨å±€å˜é‡lineno */
 		t->noline = linelinshi;
 
 		t->samenum = 0;
@@ -599,50 +599,50 @@ TreeNode * newSentenceNode(SentenceKind kind)
 		}
 
 	}
-	/*º¯Êı·µ»ØÓï¾äÀàĞÍÓï·¨Ê÷½ÚµãÖ¸Õët*/
+	/*å‡½æ•°è¿”å›è¯­å¥ç±»å‹è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆt*/
 	return t;
 }
 
-// ¹¦  ÄÜ ±í´ïÊ½ÀàĞÍÓï·¨Ê÷½Úµã´´½¨º¯Êı					
-//Ëµ  Ã÷ ¸Ãº¯ÊıÎªÓï·¨Ê÷´´½¨Ò»¸öĞÂµÄ±í´ïÊ½ÀàĞÍ½áµã		
-//      ²¢½«Óï·¨Ê÷½ÚµãµÄ³ÉÔ±³õÊ¼»¯					
+// åŠŸ  èƒ½ è¡¨è¾¾å¼ç±»å‹è¯­æ³•æ ‘èŠ‚ç‚¹åˆ›å»ºå‡½æ•°					
+//è¯´  æ˜ è¯¥å‡½æ•°ä¸ºè¯­æ³•æ ‘åˆ›å»ºä¸€ä¸ªæ–°çš„è¡¨è¾¾å¼ç±»å‹ç»“ç‚¹		
+//      å¹¶å°†è¯­æ³•æ ‘èŠ‚ç‚¹çš„æˆå‘˜åˆå§‹åŒ–					
 TreeNode * newExpNode(ExceptionKind kind)
 {
-	/* ÄÚ´æÖĞ¶¯Ì¬ÉêÇë·ÖÅäµ¥Ôª£¬·µ»ØÖ¸Ïò¸Ãµ¥ÔªµÄÓï·¨Ê÷½ÚµãÀàĞÍÖ¸Õët */
+	/* å†…å­˜ä¸­åŠ¨æ€ç”³è¯·åˆ†é…å•å…ƒï¼Œè¿”å›æŒ‡å‘è¯¥å•å…ƒçš„è¯­æ³•æ ‘èŠ‚ç‚¹ç±»å‹æŒ‡é’ˆt */
 	TreeNode * t = (TreeNode *)malloc(sizeof(TreeNode));
 
 	int i;
 
-	/* Óï·¨Ê÷½ÚµãÖ¸ÕëtÎªNULL,Î´ÄÜ³É¹¦·ÖÅäÄÚ´æµ¥Ôª		*
-	 * ½«³ö´íĞÅÏ¢¼°ĞĞºÅlinenoĞ´ÈëÁĞ±íÎÄ¼şlisting		*/
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸ºNULL,æœªèƒ½æˆåŠŸåˆ†é…å†…å­˜å•å…ƒ		*
+	 * å°†å‡ºé”™ä¿¡æ¯åŠè¡Œå·linenoå†™å…¥åˆ—è¡¨æ–‡ä»¶listing		*/
 	if (t == NULL)
 	{
 		fprintf(listing, "Out of memory error at line %d\n", lineno);
 		Error = TRUE;
 	}
-	/* Óï·¨Ê÷½ÚµãÖ¸Õët²»ÊÇNULL,ÄÚ´æµ¥ÔªÒÑ¾­³É¹¦·ÖÅä */
+	/* è¯­æ³•æ ‘èŠ‚ç‚¹æŒ‡é’ˆtä¸æ˜¯NULL,å†…å­˜å•å…ƒå·²ç»æˆåŠŸåˆ†é… */
 	else {
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½Úµãt¸÷×Ó½Úµãchild[i]ÎªNULL */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå„å­èŠ‚ç‚¹child[i]ä¸ºNULL */
 		for (i = 0; i < 3; i++) t->treechild[i] = NULL;
 
-		/* ³õÊ¼»¯ĞÂÓï·¨Ê÷½ÚµãtĞÖµÜ½ÚµãsiblingÎªNULL(¿Õ) */
+		/* åˆå§‹åŒ–æ–°è¯­æ³•æ ‘èŠ‚ç‚¹tå…„å¼ŸèŠ‚ç‚¹siblingä¸ºNULL(ç©º) */
 		t->brother = NULL;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±: ½áµãÀàĞÍnodekindÎª±í´ïÊ½ÀàĞÍExpK */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜: ç»“ç‚¹ç±»å‹nodekindä¸ºè¡¨è¾¾å¼ç±»å‹ExpK */
 		t->nodekind = Exp;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±: ±í´ïÊ½ÀàĞÍkind.expÎªº¯Êı¸ø¶¨²ÎÊıkind */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜: è¡¨è¾¾å¼ç±»å‹kind.expä¸ºå‡½æ•°ç»™å®šå‚æ•°kind */
 		t->kind.exp = kind;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±: Ô´´úÂëĞĞºÅlinelinshiÎªÈ«¾Ö±äÁ¿lineno */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜: æºä»£ç è¡Œå·linelinshiä¸ºå…¨å±€å˜é‡lineno */
 		t->noline = linelinshi;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±: ±í´ïÊ½Îª±äÁ¿ÀàĞÍÊ±µÄ±äÁ¿ÀàĞÍvarkind *
-		/* ÎªIdV.*/
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜: è¡¨è¾¾å¼ä¸ºå˜é‡ç±»å‹æ—¶çš„å˜é‡ç±»å‹varkind *
+		/* ä¸ºIdV.*/
 		t->Figure.ExceptionFigure.varkind = Identifier;
 
-		/* Ö¸¶¨ĞÂÓï·¨Ê÷½Úµãt³ÉÔ±: ÀàĞÍ¼ì²éÀàĞÍtypeÎªVoid */
+		/* æŒ‡å®šæ–°è¯­æ³•æ ‘èŠ‚ç‚¹tæˆå‘˜: ç±»å‹æ£€æŸ¥ç±»å‹typeä¸ºVoid */
 		t->Figure.ExceptionFigure.type = Void;
 
 		for (i = 0; i < 10; i++)
@@ -652,13 +652,13 @@ TreeNode * newExpNode(ExceptionKind kind)
 		}
 	}
 
-	/* º¯Êı·µ»Ø±í´ïÊ½ÀàĞÍÓï·¨Ê÷½áµãÖ¸Õët */
+	/* å‡½æ•°è¿”å›è¡¨è¾¾å¼ç±»å‹è¯­æ³•æ ‘ç»“ç‚¹æŒ‡é’ˆt */
 	return t;
 }
 
 
-/* ¹¦  ÄÜ ×Ö·û´®¸´ÖÆº¯Êı								*/
-/* Ëµ  Ã÷ ¸Ãº¯ÊıÎªÒÑ´æÔÚµÄ×Ö´®·ÖÅäÄÚ´æµ¥Ôª,²¢½«Æä¸´ÖÆ	*/
+/* åŠŸ  èƒ½ å­—ç¬¦ä¸²å¤åˆ¶å‡½æ•°								*/
+/* è¯´  æ˜ è¯¥å‡½æ•°ä¸ºå·²å­˜åœ¨çš„å­—ä¸²åˆ†é…å†…å­˜å•å…ƒ,å¹¶å°†å…¶å¤åˆ¶	*/
 /********************************************************/
 char * CopyString(char * s)
 
@@ -666,36 +666,36 @@ char * CopyString(char * s)
 	int n;
 	char * t;
 
-	/* º¯Êı²ÎÊısËù¸ø×Ö´®ÎªNULL(¿Õ), º¯Êı·µ»ØNULL */
+	/* å‡½æ•°å‚æ•°sæ‰€ç»™å­—ä¸²ä¸ºNULL(ç©º), å‡½æ•°è¿”å›NULL */
 	if (s == NULL) return NULL;
 
-	/* º¯Êı²ÎÊısËù¸ø×Ö´®·Ç¿Õ£¬¼ÆËã×Ö´®s³¤¶È+1¸³¸øÁÙÊ±±äÁ¿n */
+	/* å‡½æ•°å‚æ•°sæ‰€ç»™å­—ä¸²éç©ºï¼Œè®¡ç®—å­—ä¸²sé•¿åº¦+1èµ‹ç»™ä¸´æ—¶å˜é‡n */
 	n = strlen(s) + 1;
 
-	/* ¶¯Ì¬·ÖÅäÄÚ´æµ¥Ôª,Ö¸¶¨µ¥Ôª³¤¶ÈÎªn,tÎªÖ¸Ïò¸Ãµ¥ÔªµÄÖ¸Õë */
+	/* åŠ¨æ€åˆ†é…å†…å­˜å•å…ƒ,æŒ‡å®šå•å…ƒé•¿åº¦ä¸ºn,tä¸ºæŒ‡å‘è¯¥å•å…ƒçš„æŒ‡é’ˆ */
 	t = (char *)malloc(n);
 
-	/* µ¥ÔªÖ¸ÕëtÎªNULL(¿Õ),Î´ÄÜ³É¹¦·ÖÅä			*
-	 * ½«³ö´íĞÅÏ¢¼°ĞĞºÅlinenoĞ´ÈëÁĞ±íÎÄ¼şlisting  */
+	/* å•å…ƒæŒ‡é’ˆtä¸ºNULL(ç©º),æœªèƒ½æˆåŠŸåˆ†é…			*
+	 * å°†å‡ºé”™ä¿¡æ¯åŠè¡Œå·linenoå†™å…¥åˆ—è¡¨æ–‡ä»¶listing  */
 	if (t == NULL)
 	{
 		fprintf(listing, "Out of memory error at line %d\n", lineno);
 		Error = TRUE;
 	}
-	/* µ÷ÓÃ¿âº¯Êıstring.h,¸´ÖÆ¸ø¶¨×Ö´®sµ½ĞÂ×Ö´®µ¥Ôªt */
+	/* è°ƒç”¨åº“å‡½æ•°string.h,å¤åˆ¶ç»™å®šå­—ä¸²såˆ°æ–°å­—ä¸²å•å…ƒt */
 	else strcpy(t, s);
 
-	/* º¯Êı·µ»Ø¸´ÖÆµÃµ½µÄĞÂ×Ö´®Ö¸Õët */
+	/* å‡½æ•°è¿”å›å¤åˆ¶å¾—åˆ°çš„æ–°å­—ä¸²æŒ‡é’ˆt */
 	return t;
 }
 
 
 
-static int fpnum = 0;//Êä³ö¼ÇÂ¼token¸öÊıµÄ±äÁ¿
+static int fpnum = 0;//è¾“å‡ºè®°å½•tokenä¸ªæ•°çš„å˜é‡
 void ReadNextToken(TokenType*p)
 {
 	FILE*fp;
-	fp = fopen("D:\\tokenlist", "rb");//Ö»¶Á
+	fp = fopen("D:\\tokenlist", "rb");//åªè¯»
 	if (fp == NULL)
 	{
 		printf("There is no file Tokenlist!\n");
@@ -707,11 +707,11 @@ void ReadNextToken(TokenType*p)
 	fclose(fp);
 }
 static TokenType token;
-void match(WordType a)//ÖÕ¼«·ûÆ¥Åäº¯Êı 
+void match(WordType a)//ç»ˆæç¬¦åŒ¹é…å‡½æ•° 
 {
-	if (token.Word == a)//½«µ±Ç°µ¥´ÊÓëº¯Êı²ÎÊı¸ø¶¨µ¥´Ê±È½Ï
+	if (token.Word == a)//å°†å½“å‰å•è¯ä¸å‡½æ•°å‚æ•°ç»™å®šå•è¯æ¯”è¾ƒ
 	{
-		ReadNextToken(&token);//Ò»ÖÂÔòÈ¡ÏÂÒ»¸öµ¥´Ê
+		ReadNextToken(&token);//ä¸€è‡´åˆ™å–ä¸‹ä¸€ä¸ªå•è¯
 		linelinshi = token.lineshow;
 	}
 	else
@@ -727,7 +727,7 @@ void match(WordType a)//ÖÕ¼«·ûÆ¥Åäº¯Êı
 
 
 
-//´Ê·¨·ÖÎö²¿·Ö
+//è¯æ³•åˆ†æéƒ¨åˆ†
 
 
 
@@ -736,7 +736,7 @@ void ChainToFile(ChainNodeType*Chainhead)
 	int num = 1;
 	ChainNodeType  *currentP = (ChainNodeType*)malloc(sizeof(ChainNodeType));
 		currentP = Chainhead;
-	/*´´½¨Ò»¸öĞÂµÄÎÄ¼ş"Tokenlist",ÒÔ´æ´¢TokenĞòÁĞ*/
+	/*åˆ›å»ºä¸€ä¸ªæ–°çš„æ–‡ä»¶"Tokenlist",ä»¥å­˜å‚¨Tokenåºåˆ—*/
 	fp = fopen("D:\\tokenlist", "wb");
 	if (fp == NULL)
 	{
@@ -745,14 +745,14 @@ void ChainToFile(ChainNodeType*Chainhead)
 		//exit(0);
 	}
 
-	fp = fopen("D:\\tokenlist", "ab");   /*°´×·¼Ó·½Ê½´ò¿ªÎÄ¼ş*/
+	fp = fopen("D:\\tokenlist", "ab");   /*æŒ‰è¿½åŠ æ–¹å¼æ‰“å¼€æ–‡ä»¶*/
 	if (fp == NULL)
 	{
 		printf("cannot open file Tokenlist!\n");
 		Error = TRUE;
 		exit(0);
 	}
-	/*´Ó±íÍ·µ½±íÎ²£¬ÒÀ´Î½«ËùÓĞµÄTokenĞ´ÈëÎÄ¼ş*/
+	/*ä»è¡¨å¤´åˆ°è¡¨å°¾ï¼Œä¾æ¬¡å°†æ‰€æœ‰çš„Tokenå†™å…¥æ–‡ä»¶*/
 	do
 	{
 		fwrite(currentP, tokenlength, 1, fp);
@@ -760,10 +760,10 @@ void ChainToFile(ChainNodeType*Chainhead)
 		num++;
 	} while (currentP != NULL);
 
-	fclose(fp);  /*¹Ø±ÕÎÄ¼ş*/
+	fclose(fp);  /*å…³é—­æ–‡ä»¶*/
 
 }
-void printTokenlist()//ÏÔÊ¾´Ê·¨·ÖÎö½á¹û
+void printTokenlist()//æ˜¾ç¤ºè¯æ³•åˆ†æç»“æœ
 {
 	TokenType token;
 	fp = fopen("D:\\tokenlist", "rb");
@@ -805,34 +805,34 @@ void printTokenlist()//ÏÔÊ¾´Ê·¨·ÖÎö½á¹û
 			fprintf(listing, "Key Words: %s\n", token.Mean);
 			break;
 
-			/* µ¥´ÊtokenÎªÌØÊâ·ûºÅ£ºASSIGN (¸³Öµ)£¬½«":="Ğ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºç‰¹æ®Šç¬¦å·ï¼šASSIGN (èµ‹å€¼)ï¼Œå°†":="å†™å…¥æ–‡ä»¶listing */
 		case ASSIGN: fprintf(listing, ":=\n"); break;
 
-			/* µ¥´ÊtokenÎªÌØÊâ·ûºÅ£ºLT (Ğ¡ÓÚ)£¬½«"<"Ğ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºç‰¹æ®Šç¬¦å·ï¼šLT (å°äº)ï¼Œå°†"<"å†™å…¥æ–‡ä»¶listing */
 		case LT: fprintf(listing, "<\n"); break;
 
-			/* µ¥´ÊtokenÎªÌØÊâ·ûºÅ£ºEQ (µÈÓÚ)£¬½«"="Ğ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºç‰¹æ®Šç¬¦å·ï¼šEQ (ç­‰äº)ï¼Œå°†"="å†™å…¥æ–‡ä»¶listing */
 		case EQ: fprintf(listing, "=\n"); break;
 
-			/* µ¥´ÊtokenÎªÌØÊâ·ûºÅ£ºLPAREN (×óÀ¨ºÅ)£¬½«"("Ğ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºç‰¹æ®Šç¬¦å·ï¼šLPAREN (å·¦æ‹¬å·)ï¼Œå°†"("å†™å…¥æ–‡ä»¶listing */
 		case LPAREN: fprintf(listing, "(\n"); break;
 
-			/* µ¥´ÊtokenÎªÌØÊâ·ûºÅ£ºRPAREN (ÓÒÀ¨ºÅ)£¬½«")"Ğ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºç‰¹æ®Šç¬¦å·ï¼šRPAREN (å³æ‹¬å·)ï¼Œå°†")"å†™å…¥æ–‡ä»¶listing */
 		case RPAREN: fprintf(listing, ")\n"); break;
 
-			/* µ¥´ÊtokenÎªÌØÊâ·ûºÅ£ºSEMI (·ÖºÅ)£¬½«";"Ğ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºç‰¹æ®Šç¬¦å·ï¼šSEMI (åˆ†å·)ï¼Œå°†";"å†™å…¥æ–‡ä»¶listing */
 		case SEMI: fprintf(listing, ";\n"); break;
 
-			/* µ¥´ÊtokenÎªÌØÊâ·ûºÅ£ºPLUS (¼ÓºÅ)£¬½«"+"Ğ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºç‰¹æ®Šç¬¦å·ï¼šPLUS (åŠ å·)ï¼Œå°†"+"å†™å…¥æ–‡ä»¶listing */
 		case PLUS: fprintf(listing, "+\n"); break;
 
-			/* µ¥´ÊtokenÎªÌØÊâ·ûºÅ£»MINUS (¼õºÅ)£¬½«"-"Ğ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºç‰¹æ®Šç¬¦å·ï¼›MINUS (å‡å·)ï¼Œå°†"-"å†™å…¥æ–‡ä»¶listing */
 		case MINUS: fprintf(listing, "-\n"); break;
 
-			/* µ¥´ÊtokenÎªÌØÊâ·ûºÅ£ºTIMES (³ËºÅ)£¬½«"*"Ğ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºç‰¹æ®Šç¬¦å·ï¼šTIMES (ä¹˜å·)ï¼Œå°†"*"å†™å…¥æ–‡ä»¶listing */
 		case TIMES: fprintf(listing, "*\n"); break;
 
-			/* µ¥´ÊtokenÎªÌØÊâ·ûºÅ£ºOVER (³ıºÅ)£¬½«"/"Ğ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºç‰¹æ®Šç¬¦å·ï¼šOVER (é™¤å·)ï¼Œå°†"/"å†™å…¥æ–‡ä»¶listing */
 		case OVER: fprintf(listing, "/\n");  break;
 
 		case DOT:  fprintf(listing, ".\n"); break;
@@ -845,10 +845,10 @@ void printTokenlist()//ÏÔÊ¾´Ê·¨·ÖÎö½á¹û
 
 		case UNDERANGE: fprintf(listing, "..\n"); break;
 
-			/* µ¥´ÊtokenÎª²¾¼Çµ¥´Ê·ûºÅ£ºENDFILE (ÎÄ¼ş½áÎ²)£¬½«EOFĞ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºç°¿è®°å•è¯ç¬¦å·ï¼šENDFILE (æ–‡ä»¶ç»“å°¾)ï¼Œå°†EOFå†™å…¥æ–‡ä»¶listing */
 		case ENDFILE: fprintf(listing, "EOF\n"); break;
 
-			/* µ¥´ÊtokenÎª¶à×Ö·ûµ¥´Ê·ûºÅ£ºNUM (Êı×Ö)£¬½«ÊıÖµĞ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºå¤šå­—ç¬¦å•è¯ç¬¦å·ï¼šNUM (æ•°å­—)ï¼Œå°†æ•°å€¼å†™å…¥æ–‡ä»¶listing */
 		case INTC:
 			fprintf(listing, "Number, val= %s\n", token.Mean);
 			break;
@@ -857,17 +857,17 @@ void printTokenlist()//ÏÔÊ¾´Ê·¨·ÖÎö½á¹û
 			fprintf(listing, "Inchar, char=%s\n", token.Mean);
 			break;
 
-			/* µ¥´ÊtokenÎª¶à×Ö·ûµ¥´Ê·ûºÅ£ºID (±êÊ¶·û)£¬½«±êÊ¶·ûÃûĞ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºå¤šå­—ç¬¦å•è¯ç¬¦å·ï¼šID (æ ‡è¯†ç¬¦)ï¼Œå°†æ ‡è¯†ç¬¦åå†™å…¥æ–‡ä»¶listing */
 		case ID:
 			fprintf(listing, "Identifier, name= %s\n", token.Mean);
 			break;
 
-			/* µ¥´ÊtokenÎª²¾¼Çµ¥´Ê·ûºÅ£ºERROR (´íÎó)£¬½«´íÎóĞÅÏ¢Ğ´ÈëÎÄ¼şlisting */
+			/* å•è¯tokenä¸ºç°¿è®°å•è¯ç¬¦å·ï¼šERROR (é”™è¯¯)ï¼Œå°†é”™è¯¯ä¿¡æ¯å†™å…¥æ–‡ä»¶listing */
 		case ERROR:
 			fprintf(listing, "ERROR: %s\n", token.Mean);
 			break;
 
-			/* µ¥´ÊtokenÎªÆäËûÎ´Öªµ¥´Ê£¬Î´ÖªĞÅÏ¢Ğ´ÈëÎÄ¼şlisting,´ËÖÖÇé¿ö²»Ó¦·¢Éú */
+			/* å•è¯tokenä¸ºå…¶ä»–æœªçŸ¥å•è¯ï¼ŒæœªçŸ¥ä¿¡æ¯å†™å…¥æ–‡ä»¶listing,æ­¤ç§æƒ…å†µä¸åº”å‘ç”Ÿ */
 		default:
 			fprintf(listing, "Unknown token: %d\n", token.Word);
 			break;
